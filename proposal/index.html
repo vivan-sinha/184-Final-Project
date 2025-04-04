@@ -3,183 +3,120 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<h1>Paint by Numbers, Coloring book sim</h1>
-		<h4>By Keira Swei, Vivan Sinha, Robert Ni, and Kyle Cheng</h4>
+		<h1>Paint by Numbers, Coloring Book Sim</h1>
+		<h4 style = "text-align: center;">By Keira Swei, Vivan Sinha, Robert Ni, and Kyle Cheng</h4>
 
-		<h2>Overview</h2>
-		<p>For this project we implemented rasterization in C++ that shows a visual
-		representation of what different sampling and interpolation techniques
-		look like. Rasterization takes an input image and converts it into output that appears as pixels on a display. This allows an easy compare and contrast of different methods.
+		<h2>Summary</h2>
+		<p>Given an input image, the program will turn it into a 
+			paint-by-numbers, where each color is labeled with a number 
+			(like a coloring book). A UI will enable the user to color the 
+			image using colored brush strokes and perhaps other art methods 
+			like pointillism. Brush strokes should look realistic as if an 
+			actual paintbrush, pencil, etc., was used.
 		</p>
-		<p>I found the idea behind the anti-alising technique Supersampling to be very 	interesting as it allows us to take multiple samples within one pixel and take the average of those values to output an intermediate color value which helps to blur sharp lines and angles.
+
+		<h2>Problem Description</h2>
+		<p>Problem: It can be challenging to replicate details, select 
+			a color palette, or apply an artistic style when painting 
+			with an image reference.</p>
+		<p>Solution: Our project aims to create a paint-by-numbers 
+			representation from an inputted image. This application 
+			would make painting by numbers completely customizable and 
+			accessible. Additionally, this project would be a great 
+			learning opportunity for all of us as we figure out how to 
+			segment the images, constrain color palettes, and create 
+			realistic brush strokes. We are interested in investigating 
+			the Kuwahara filter to potentially reduce noise in the 
+			images or create a painting-like effect, as well as image 
+			thresholding or edge detection algorithms to segment the image.</p>
+
+		<h2>Goals and Deliverables</h2>
+		<p>The project has 3 steps:</p>
+		<ol>
+			<li>The user should be able to select an image from 
+				their file system and upload it. The program 
+				will display this image.
+			</li>
+			<li>
+				Convert to paint-by-numbers. Through this project, 
+				we hope to create an interactive system where a user 
+				can transform an image of their choosing into a 
+				paint-by-numbers coloring interface. 
+				In order to achieve this, we plan to design an 
+				algorithm that divides an image into several areas of 
+				similar enough color, find a way to average the colors 
+				in a given area or partition the colors in the image 
+				into set buckets of color, and create a system to 
+				allow users to choose colors and fill in blocks of color.
+			</li>
+			<li>
+				Paint. The program will attempt to paint brush strokes 
+				with the corresponding color in each numbered section. 
+				The brush strokes will look realistic, like real brush 
+				strokes. Multiple brush strokes and different directions 
+				make the painting more realistic.
+			</li>
+		</ol>
+		<p>Our ultimate goal and the final result would be a working 
+			interface itself, where a user would upload an image, 
+			generate a paint-by-numbers page, and be able to color in 
+			the paint-by-numbers.
+		</p>
+		<p>
+			We plan to achieve these goals by extending concepts we used
+			 in class (particularly Homework 1), where we learned to draw 
+			 and sample triangles to render an image. We plan on using a 
+			 Kuwahara filter to block out colors first and then create a 
+			 more paint-like image. Then, we will research and utilize edge 
+			 detection methods that help divide an image into sections of 
+			 different colors and average these colors. The last step 
+			 would be to take the images and edges and transfer them 
+			 into a working interface that allows a user to fill in 
+			 blocks of the image. These goals are achievable because of 
+			 the wide range of resources available to perform edge detection 
+			 and color extraction/grouping tasks.
 		</p>
 
-		<h2>Part 1: Drawing Single-Color Triangles</h2>
-		<div class="row">
-		  <div class="column">
-		    <img src="Images/test3.png" alt="Test 3" style="width:100%; padding: 0%">
-				<p>Test 3</p>
-		  </div>
-		  <div class="column">
-		    <img src="Images/test4.png" alt="Test 4" style="width:100%; padding: 0%">
-				<p>Test 4</p>
-		  </div>
-		  <div class="column">
-		    <img src="Images/test5.png" alt="Test 5" style="width:100%; padding: 0%">
-				<p>Test 5</p>
-		  </div>
-			<div class="column">
-		    <img src="Images/test6.png" alt="Test 6" style="width:100%; padding: 0%">
-				<p>Test 6</p>
-		  </div>
-		</div>
-		<p>For this portion we iterate through all the points on the canvas and call a helper function point_triangle which takes the current x and y coordinates as well as those of the 3 vertices of the triangle and computes the dot product of the current point with the first vertex and second vertex, second and third, and third and first vertex. If the values of all three of these dot products have the same sign, it means that the point is within the triangle.</p>
-		<p>To make sure that this algoithm is no worse than one that checks each sample within the bounding box of the triangle, I computed the min/max x and y values of the 3 points. This allows us to narrow down the points we need to check to a rectangle around the triangle.</p>
+		<p>In order to measure the quality of the system, we will use 
+			online generators that perform similar tasks as a benchmark 
+			for our own paint-by-numbers generator. This would give us 
+			some reference for what a paint-by-numbers should look like 
+			for an image. Additionally, we will perform many tests on 
+			our own to document our experiences using our UI and confirm 
+			that our interface works well.
+		</p>
 
-		<h2>Part 2: Antialiasing by Supersampling</h2>
-		<div class="row">
-		  <div class="column">
-		    <img src="Images/part2-1.png" alt="Sample Rate 1" style="width:100%; padding: 0%">
-				<p>Sample Rate 1</p>
-		  </div>
-		  <div class="column">
-		    <img src="Images/part2-2.png" alt="Sample Rate 4" style="width:100%; padding: 0%">
-				<p>Sample Rate 4</p>
-		  </div>
-		  <div class="column">
-		    <img src="Images/part2-3.png" alt="Sample Rate 9" style="width:100%; padding: 0%">
-				<p>Sample Rate 9</p>
-		  </div>
-			<div class="column">
-		    <img src="Images/part2-4.png" alt="Sample Rate 16" style="width:100%; padding: 0%">
-				<p>Sample Rate 16</p>
-		  </div>
-		</div>
-		<p>Supersampling is an antialiasing technique that involves taking multiple measurements within one pixel and setting the value of the pixel to the average of the subpixel samples. This blurs the sharp lines and edges you would see in rasterization otherwise. In other words, it decreases the appearance of jaggies.</p>
-		<p>I implemented this by changing the previous rasterization method to sample multiple times with the provided sample rate. For each pixel, the center of each of the subsections of the pixel are tested to determine if the section is within the triangle. If it is found that the point is within the triangle then sample_buffer is colored. Afterwards the average of the colors are calculated, which creates the burred line effect you see in the images above. To do that the resolve_to_framebuffer function was modified to calculate the averages of the colors.</p>
-		<h3>Extra Credit: Jittered Sampling</h3>
-		<div class="row">
-		  <div class="column">
-		    <img src="Images/jittered1.png" alt="Sample Rate 1" style="width:100%; padding: 0%">
-				<p1>Sample Rate 1</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/jittered2.png" alt="Sample Rate 4" style="width:100%; padding: 0%">
-				<p1>Sample Rate 4</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/jittered3.png" alt="Sample Rate 9" style="width:100%; padding: 0%">
-				<p1>Sample Rate 9</p1>
-		  </div>
-			<div class="column">
-		    <img src="Images/jittered4.png" alt="Sample Rate 16" style="width:100%; padding: 0%">
-				<p1>Sample Rate 16</p1>
-		  </div>
-		</div>
-		<p>Jittered sampling is different from supersampling as it partitions the pixel into different regions then chooses one randomly from each. Compared to supersampling, the results are more random and unpredictable, however it smooths out with more samples.</p>
+		<p><b>What we plan to deliver:</b> We plan to deliver a program 
+			that can take any image as input and convert it into a 
+			paint-by-numbers template. We also plan for this 
+			template to be interactive with a UI so the user can 
+			fill in the template in a simulated painting environment.
+		</p>
+		<p><b>What we hope to deliver:</b> If we are ahead of schedule, 
+			we can implement more art styles, including a 3D aspect 
+			to the simulation to allow light reflection off 
+			brushstrokes or auto-painting of the template.
+		</p>
 
-		<h2>Part 3: Transforms</h2>
-		<div class="row">
-		  <div class="column">
-		    <img src="Images/robot.png" alt="Robot" style="width:100%; padding: 0%">
-				<p1>Default Robot</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/steve.png" alt="Robot Steve" style="width:100%; padding: 0%">
-				<p1>Robot Steve</p1>
-		  </div>
-		</div>
-		<p>I manipulated Mr. Robot to look like Steve from Minecraft. I changed the body proportions by moving the points so that his body would be longer and arms and legs would be thicker. His head was made bigger by scaling it and rotated. I also changed the colors to be Steve's classic colors with his teal shirt and dark blue pants. I rotated the arms and legs to make it look like Steve is walking. Small detail that I added, the left arm is slightly shorter because it's meant to be behind the body.</p>
+		<h2>Schedule</h2>
+		<ul>
+			<li>Week 1: Paint by number image conversion</li>
+			<li>Week 2: Painting algorithms and realistic brush strokes</li>
+			<li>Week 3: Adjust/fix the image conversion and painting algorithms from the previous weeks</li>
+			<li>Week 4: Create the UI to paint onto the image</li>
+			<li>Extra: Maybe add a 3d viewer to show the depth of brushstrokes</li>
+		</ul>
 
-		<h3>Extra Credit: Added to GUI</h3>
-		<div class="row">
-		  <div class="column">
-		    <img src="Images/border.png" alt="With Border" style="width:100%; padding: 0%">
-				<p1>With Border</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/noborder.png" alt="Without Border" style="width:100%; padding: 0%">
-				<p1>Without Border</p1>
-		  </div>
-		</div>
-		<p>I added another option to the GUI, by pressing b the border around the image will be removed, allowing for cleaner screenshots. I did this by modifying the redraw function.</p>
-
-		<h2>Part 4: Barycentric Coordinates</h2>
-		<div class="row">
-		  <div class="column">
-		    <img src="Images/pasteltri.png" alt="Pastel Triangle" style="width:100%; padding: 0%">
-				<p1>Pastel Triangle</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/test7.png" alt="Test 7" style="width:100%; padding: 0%">
-				<p1>Test 7</p1>
-		  </div>
-		</div>
-		<p>The Barycentric coordinate system can be used to find the position of any point in a triangle by calculating its distance from each vertex. This can also be applied to determining the color of any point within the triange given the color of the three vertices by performing a weighed average based on its distances.</p>
-		<p>This was implemented by first transforming the given x and y values of the point into Barycentric coordinates. These values are then taken and weighted by distance with the colors of the vertices and finally added together to get the final color of the pixel.</p>
-
-		<h2>Part 5: Texture Mapping with Pixel Sampling</h2>
-		<div class="row">
-			<div class="column">
-				<img src="Images/texture1-1.png" alt="Nearest Pixel 1" style="width:100%; padding: 0%">
-				<p1>Nearest Pixel 1</p1>
-			</div>
-			<div class="column">
-				<img src="Images/texture1-2.png" alt="Bilinear 1" style="width:100%; padding: 0%">
-				<p1>Bilinear 1</p1>
-			</div>
-		</div>
-		<div class="row">
-			<div class="column">
-				<img src="Images/texture1-3.png" alt="Nearest Pixel 16" style="width:100%; padding: 0%">
-				<p1>Nearest Pixel 16</p1>
-			</div>
-			<div class="column">
-				<img src="Images/texture1-4.png" alt="Bilinear 16" style="width:100%; padding: 0%">
-				<p1>Bilinear 16</p1>
-			</div>
-		</div>
-		<p>Pixel sampling allows us to add a texture to an image. To do this, we need to first transition from the point's x and y coordinates to the texture's coordinates, u and v. After sampling, we then apply the corresponding color value to the pixel.</p>
-		<p>Two types of pixel sampling were implemented, the first one being nearest pixel sampling. This method choses the closest point to the pixel in the texture and applies it to the image. The other type is bilinear sampling which involves taking the closest four points in the texture and calculating a weighted sum of the color values before assigning it to the pixel color.</p>
-		<p>As you can see above, bilinear sampling produces better results as compared to nearest pixel sampling as it blurs the edges and differences between nearby colors more, allowing the image to look much smoother with less jaggies. However, this doesn't necessarily mean that the texture is accurate.</p>
-		<p>There would be a large difference between the two methods when the edges to the texture are sharp and the data isn't continous as this would cause nearest pixel sampling to produce results that look blocky and pixelated.</p>
-
-		<h2>Part 6: Texture Mapping with Mipmaps</h2>
-		<p align="center">Nearest Sampling</p>
-		<div class="row">
-		  <div class="column">
-		    <img src="Images/zn.png" alt="Nearest/Zero" style="width:100%; padding: 0%">
-				<p1>Zero Level</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/nn.png" alt="Nearest/Nearest" style="width:100%; padding: 0%">
-				<p1>Nearest Level</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/bn.png" alt="Nearest/Bilinear" style="width:100%; padding: 0%">
-				<p1>Bilinear Level</p1>
-		  </div>
-		</div>
-		<br></br>
-		<p align="center">Bilinear Sampling</p>
-		<div class="row">
-		  <div class="column">
-		    <img src="Images/zb.png" alt="Bilinear/Zero" style="width:100%; padding: 0%">
-				<p1>Zero Level</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/nb.png" alt="Bilinear/Nearest" style="width:100%; padding: 0%">
-				<p1>Nearest Level</p1>
-		  </div>
-		  <div class="column">
-		    <img src="Images/bb.png" alt="Bilinear/Bilinear" style="width:100%; padding: 0%">
-				<p1>Bilinear Level</p1>
-		  </div>
-		</div>
-		<p>Level sampling involves using screen information to determine the right resolution when sampling for the pixel's color value. For pixels that coorespond to further points in the texture, we can reduce the resolution to help reduce aliasing. Using this method we can choose the most suitable resolution for the pixels in our image when texture mapping.</p>
-		<p>Level Zero: Highest resolution, we sample at the zeroth level.</p>
-		<p>Nearest Level: Uses closest mipmap level as the pixel texture. We do this by rounding the level to the closest integer.</p>
-		<p>Bilinear: Uses actual mipmap level, sample the pixel twice with the nearest integer levels then interpolate the two colors depending on the difference between the values and the actual level to obtain the pixel value.</p>
-		<br></br>
+		<h2>Resources</h2>
+		<ul>
+			<li>The application will potentially be written in Python and maybe 
+				JavaScript. The program might be able to run on the web if it's 
+				light enough (but the 3d viewer might require more).</li>
+			<li>Kuwahara filter</li>
+			<li>Image Thresholding</li>
+			<li>Edge Detection</li>
+			<li>Reducing the number of colors in an image: <a href = "https://dl.acm.org/doi/10.1145/800064.801294">https://dl.acm.org/doi/10.1145/800064.801294</a></li>
+			<li>Example of generating paint by numbers, which could be used as a benchmark: <a href = "https://www.digitpaints.com/en/generator">https://www.digitpaints.com/en/generator</a></li>
+		</ul>
 	</body>
 </html>
