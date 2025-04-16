@@ -74,7 +74,6 @@ export default function DrawingPage(props) {
       });
 
       ctx.font = "20px sans-serif";
-      ctx.fillStyle = "black";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
@@ -88,7 +87,17 @@ export default function DrawingPage(props) {
         });
         const centerX = Math.round(sumX / count);
         const centerY = Math.round(sumY / count);
-        ctx.fillText(colorNum.toString(), centerX, centerY);
+
+        // translucent background circle
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.fill();
+
+        // label text
+        ctx.fillStyle = "black";
+        const offsetY = 1; // text was being rendered a little too high
+        ctx.fillText(colorNum.toString(), centerX, centerY + offsetY);
       });
     }
   }, [selectedRegion, showOutlines, REGION_MAP, DIMENSIONS]);
@@ -285,7 +294,7 @@ export default function DrawingPage(props) {
             max="100"
             value={brushWidth}
             onChange={(e) => {
-              const val = Math.max(1, Math.min(100, Number(e.target.value)));
+              const val = Math.max(1, Math.min(500, Number(e.target.value)));
               setBrushWidth(val);
             }}
             className="ml-2 w-auto text-center border border-black/10 rounded py-0.5 mr-0.5 no-spinner"
@@ -297,7 +306,7 @@ export default function DrawingPage(props) {
       <div className="flex flex-row gap-6 w-full max-w-6xl justify-center items-center">
         <div
           ref={canvasWrapperRef}
-          className="relative bg-white border-2 border-gray-300 rounded shadow-lg"
+          className="relative bg-white border-2 border-gray-300 rounded shadow-lg cursor-crosshair"
           style={{ width: DIMENSIONS.width, height: DIMENSIONS.height }}
         >
           {!selectedRegion && (
