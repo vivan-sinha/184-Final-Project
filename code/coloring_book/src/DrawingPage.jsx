@@ -1,20 +1,25 @@
 import React, { useRef, useState, useEffect } from "react";
 
 export default function DrawingPage(props) {
+  // Destructure props to extract necessary data
   const { FILENAME, COLORS, REGION_MAP, DIMENSIONS } = props;
+
+  // Refs for various canvas elements and containers
   const canvasRef = useRef(null);
   const highlightRef = useRef(null);
   const cursorRef = useRef(null);
   const paletteRef = useRef(null);
   const canvasWrapperRef = useRef(null);
 
-  const [drawing, setDrawing] = useState(false);
-  const [currentColor, setCurrentColor] = useState(null);
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [brushWidth, setBrushWidth] = useState(10);
-  const [showOutlines, setShowOutlines] = useState(true);
-  const [lastPoint, setLastPoint] = useState(null);
+  // State variables for managing drawing, selected region, brush width, etc.
+  const [drawing, setDrawing] = useState(false); // Tracks if the user is currently drawing
+  const [currentColor, setCurrentColor] = useState(null); // Currently selected color
+  const [selectedRegion, setSelectedRegion] = useState(null); // Currently selected region
+  const [brushWidth, setBrushWidth] = useState(10); // Width of the brush
+  const [showOutlines, setShowOutlines] = useState(true); // Whether to show region outlines
+  const [lastPoint, setLastPoint] = useState(null); // Last point drawn on the canvas
 
+  // Initialize the base canvas with a white background
   useEffect(() => {
     const baseCanvas = canvasRef.current;
     baseCanvas.width = DIMENSIONS.width;
@@ -24,6 +29,7 @@ export default function DrawingPage(props) {
     baseCtx.fillRect(0, 0, baseCanvas.width, baseCanvas.height);
   }, [DIMENSIONS]);
 
+  // Highlight selected region or show outlines for all regions
   useEffect(() => {
     const highlightCanvas = highlightRef.current;
     highlightCanvas.width = DIMENSIONS.width;
@@ -32,6 +38,7 @@ export default function DrawingPage(props) {
     const ctx = highlightCanvas.getContext("2d");
     ctx.clearRect(0, 0, highlightCanvas.width, highlightCanvas.height);
 
+    // Helper function to determine if a pixel is a border pixel
     const isBorderPixel = (region, x, y) => {
       const key = `${x},${y}`;
       if (!region.has(key)) return false;
@@ -102,12 +109,14 @@ export default function DrawingPage(props) {
     }
   }, [selectedRegion, showOutlines, REGION_MAP, DIMENSIONS]);
 
+  // Initialize the cursor canvas
   useEffect(() => {
     const cursorCanvas = cursorRef.current;
     cursorCanvas.width = DIMENSIONS.width;
     cursorCanvas.height = DIMENSIONS.height;
   }, [DIMENSIONS]);
 
+  // Handle clicks outside the canvas and palette
   useEffect(() => {
     const handleClickOutside = (e) => {
       const isOutsideCanvas = canvasWrapperRef.current && !canvasWrapperRef.current.contains(e.target);
@@ -130,12 +139,13 @@ export default function DrawingPage(props) {
     };
   }, [drawing, selectedRegion]);
 
+  // Draw the cursor on the canvas
   const drawCursor = (e) => {
     const canvas = cursorRef.current;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (!currentColor) return;
+    if (!currentColor || !selectedRegion) return;
 
     const [x, y] = getCursorPos(e);
 
@@ -144,9 +154,15 @@ export default function DrawingPage(props) {
     ctx.fillStyle = currentColor;
     ctx.globalAlpha = 0.6;
     ctx.fill();
-    ctx.globalAlpha = 1.0;
+
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.stroke();
+
+    ctx.globalAlpha = 1.0; // Reset alpha
   };
 
+  // Apply drawing to the selected region using a mask
   const applyMaskedDrawing = (drawCallback, boundingBox = null) => {
     const mainCanvas = canvasRef.current;
     const [width, height] = [mainCanvas.width, mainCanvas.height];
@@ -181,6 +197,7 @@ export default function DrawingPage(props) {
     mainCtx.putImageData(oldPixels, 0, 0);
   };
 
+  // Start drawing on the canvas
   const startDraw = (e) => {
     const [x, y] = getCursorPos(e);
     if (selectedRegion) {
@@ -202,44 +219,57 @@ export default function DrawingPage(props) {
     }
   };
 
+  // End drawing on the canvas
   const endDraw = () => {
     setDrawing(false);
     setLastPoint(null);
   };
 
+  // Draw a line on the canvas
   const draw = (e) => {
     if (!drawing || !lastPoint || !currentColor) return;
+
+    // Get the current cursor position
     const [x, y] = getCursorPos(e);
+
+    // Ensure the cursor is within the selected region
     if (!inSelectedRegion(x, y)) return;
 
+    // Get the last cursor position
     const [lastX, lastY] = lastPoint;
-    const r = Math.ceil(brushWidth / 2);
 
+    // Calculate the bounding box for the brush stroke
+    const r = Math.ceil(brushWidth / 2);
     const minX = Math.max(0, Math.min(lastX, x) - r);
     const maxX = Math.min(canvasRef.current.width - 1, Math.max(lastX, x) + r);
     const minY = Math.max(0, Math.min(lastY, y) - r);
     const maxY = Math.min(canvasRef.current.height - 1, Math.max(lastY, y) + r);
 
+    // Apply the drawing to the canvas within the bounding box
     applyMaskedDrawing((ctx) => {
-      ctx.lineWidth = brushWidth;
-      ctx.lineCap = "round";
+      ctx.lineWidth = brushWidth; // Set the brush width
+      ctx.lineCap = "round"; // Use rounded edges for the brush
       ctx.strokeStyle = currentColor;
       ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
-      ctx.lineTo(x, y);
+      ctx.moveTo(lastX, lastY); // Start from the last cursor position
+      ctx.lineTo(x, y); // Draw a line to the current cursor position
       ctx.stroke();
     }, [minX, minY, maxX, maxY]);
 
+    // Update the last cursor position
     setLastPoint([x, y]);
   };
 
+  // Draw a dot on the canvas
   const drawDot = (x, y) => {
+    // Calculate the bounding box for the dot
     const r = Math.ceil(brushWidth / 2);
     const minX = Math.max(0, x - r);
     const maxX = Math.min(canvasRef.current.width - 1, x + r);
     const minY = Math.max(0, y - r);
     const maxY = Math.min(canvasRef.current.height - 1, y + r);
 
+    // Apply the drawing to the canvas within the bounding box
     applyMaskedDrawing((ctx) => {
       ctx.beginPath();
       ctx.arc(x, y, brushWidth / 2, 0, 2 * Math.PI);
@@ -248,6 +278,7 @@ export default function DrawingPage(props) {
     }, [minX, minY, maxX, maxY]);
   };
 
+  // Get the cursor position relative to the canvas
   const getCursorPos = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = Math.floor(e.clientX - rect.left);
@@ -255,16 +286,19 @@ export default function DrawingPage(props) {
     return [x, y];
   };
 
+  // Check if a point is inside the selected region
   const inSelectedRegion = (x, y) => {
     if (!selectedRegion) return false;
     const region = REGION_MAP.find(r => r.name === selectedRegion);
     return region && region.pixels.has(`${x},${y}`);
   };
 
+  // Render the drawing page UI
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-2xl font-semibold mb-4">{FILENAME}</h1>
 
+      {/* Display selected region or prompt to select one */}
       {selectedRegion ? (
         <p className="mb-2 text-lg font-medium text-gray-700">
           Region Color: <span className="text-blue-600">{REGION_MAP.filter(r => r.name === selectedRegion)[0].colorNum}</span>
@@ -275,6 +309,7 @@ export default function DrawingPage(props) {
         </p>
       )}
 
+      {/* Brush width controls */}
       <div className="flex flex-col items-center w-full max-w-6xl mb-6">
         <div className="flex items-center justify-center gap-4">
           <label htmlFor="brushWidth" className="text-lg">Brush Width:</label>
@@ -303,12 +338,14 @@ export default function DrawingPage(props) {
         </div>
       </div>
 
+      {/* Canvas and palette */}
       <div className="flex flex-row gap-6 w-full max-w-6xl justify-center items-center">
         <div
           ref={canvasWrapperRef}
-          className="relative bg-white border-2 border-gray-300 rounded shadow-lg cursor-crosshair"
+          className={`relative bg-white border-2 border-gray-300 rounded shadow-lg ${selectedRegion? (currentColor ? "cursor-none" : "cursor-not-allowed") : "cursor-pointer"}`}
           style={{ width: DIMENSIONS.width, height: DIMENSIONS.height }}
         >
+          {/* Toggle outlines button */}
           {!selectedRegion && (
             <button
               onClick={() => setShowOutlines(prev => !prev)}
@@ -318,6 +355,7 @@ export default function DrawingPage(props) {
             </button>
           )}
 
+          {/* Main canvas */}
           <canvas
             ref={canvasRef}
             style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px` }}
@@ -330,11 +368,13 @@ export default function DrawingPage(props) {
               cursorRef.current.getContext("2d").clearRect(0, 0, DIMENSIONS.width, DIMENSIONS.height);
             }}
           />
+          {/* Highlight canvas */}
           <canvas
             ref={highlightRef}
             style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px` }}
             className="absolute top-0 left-0 z-10 pointer-events-none"
           />
+          {/* Cursor canvas */}
           <canvas
             ref={cursorRef}
             style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px`, cursor: "none" }}
@@ -342,8 +382,9 @@ export default function DrawingPage(props) {
           />
         </div>
 
+        {/* Color palette */}
         <div ref={paletteRef} className="flex flex-col items-center justify-center">
-          <h2 className="text-lg font-semibold mb-2">Colors</h2>
+          <h2 className="text-lg font-semibold mb-2">Colors:</h2>
           <div className="flex flex-col items-center">
             {COLORS.map((color, index) => {
               const isSelected = color === currentColor;
