@@ -1,0 +1,147 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="style.css">
+		<style>
+			li {
+  				margin: 0;
+  				padding: 0;
+			}
+
+			body > ul,
+			body > ol {
+  				padding-left: 18%;
+			}
+
+			a, b{
+  				background: none; 
+  				padding: 0;
+  				margin: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Paint by Numbers, Coloring Book Sim — Milestone</h1>
+		<h4 style = "text-align: center;">By Keira Swei, Vivan Sinha, Robert Ni, and Kyle Cheng</h4>
+        <h4 style = "text-align: center;">Team 20</h4>
+
+        <h3>Links:</h3>
+			<a href="https://vivan.bio/184-Final-Project/index.html">Webpage</a>
+			<br><br>
+			<a href="CHANGE LINK">Video</a>
+			<br><br>
+			<a href="https://docs.google.com/presentation/d/1Jzqd_YR6RlLzlu-myrogAe-ESFUb7VHVO5aH7oAvgb8/edit?usp=sharing">Slideshow</a>
+
+		<h2>Summary</h2>
+		<p>Given an input image, the program will turn it into a 
+			paint-by-numbers, where each color is labeled with a number 
+			(like a coloring book). A UI will enable the user to color the 
+			image using colored brush strokes and perhaps other art methods 
+			like pointillism. Brush strokes should look realistic as if an 
+			actual paintbrush, pencil, etc., was used.
+		</p>
+
+		<h2>Problem Description</h2>
+		<p>Problem: It can be challenging to replicate details, select 
+			a color palette, or apply an artistic style when painting 
+			with an image reference.</p>
+		<p>Solution: Our project aims to create a paint-by-numbers 
+			representation from an inputted image. This application 
+			would make painting by numbers completely customizable and 
+			accessible. Additionally, this project would be a great 
+			learning opportunity for all of us as we figure out how to 
+			segment the images, constrain color palettes, and create 
+			realistic brush strokes. We are interested in investigating 
+			the Kuwahara filter to potentially reduce noise in the 
+			images or create a painting-like effect, as well as image 
+			thresholding or edge detection algorithms to segment the image.</p>
+
+		<h2>Goals and Deliverables</h2>
+		<p>The project has 3 steps:</p>
+		<ol>
+			<li>The user should be able to select an image from 
+				their file system and upload it. The program 
+				will display this image.
+			</li>
+			<li>
+				Convert to paint-by-numbers. Through this project, 
+				we hope to create an interactive system where a user 
+				can transform an image of their choosing into a 
+				paint-by-numbers coloring interface. 
+				In order to achieve this, we plan to design an 
+				algorithm that divides an image into several areas of 
+				similar enough color, find a way to average the colors 
+				in a given area or partition the colors in the image 
+				into set buckets of color, and create a system to 
+				allow users to choose colors and fill in blocks of color.
+			</li>
+			<li>
+				Paint. The program will attempt to paint brush strokes 
+				with the corresponding color in each numbered section. 
+				The brush strokes will look realistic, like real brush 
+				strokes. Multiple brush strokes and different directions 
+				make the painting more realistic.
+			</li>
+		</ol>
+		<p>Our ultimate goal and the final result would be a working 
+			interface itself, where a user would upload an image, 
+			generate a paint-by-numbers page, and be able to color in 
+			the paint-by-numbers.
+		</p>
+		<p>
+			We plan to achieve these goals by extending concepts we used
+			 in class (particularly Homework 1), where we learned to draw 
+			 and sample triangles to render an image. We plan on using a 
+			 Kuwahara filter to block out colors first and then create a 
+			 more paint-like image. Then, we will research and utilize edge 
+			 detection methods that help divide an image into sections of 
+			 different colors and average these colors. The last step 
+			 would be to take the images and edges and transfer them 
+			 into a working interface that allows a user to fill in 
+			 blocks of the image. These goals are achievable because of 
+			 the wide range of resources available to perform edge detection 
+			 and color extraction/grouping tasks.
+		</p>
+
+		<p>In order to measure the quality of the system, we will use 
+			online generators that perform similar tasks as a benchmark 
+			for our own paint-by-numbers generator. This would give us 
+			some reference for what a paint-by-numbers should look like 
+			for an image. Additionally, we will perform many tests on 
+			our own to document our experiences using our UI and confirm 
+			that our interface works well.
+		</p>
+
+		<p><b>What we plan to deliver:</b> We plan to deliver a program 
+			that can take any image as input and convert it into a 
+			paint-by-numbers template. We also plan for this 
+			template to be interactive with a UI so the user can 
+			fill in the template in a simulated painting environment.
+		</p>
+		<p><b>What we hope to deliver:</b> If we are ahead of schedule, 
+			we can implement more art styles, including a 3D aspect 
+			to the simulation to allow light reflection off 
+			brushstrokes or auto-painting of the template.
+		</p>
+
+		<h2>Schedule</h2>
+		<ul>
+			<li>Week 1: Paint by number image conversion</li>
+			<li>Week 2: Painting algorithms and realistic brush strokes</li>
+			<li>Week 3: Adjust/fix the image conversion and painting algorithms from the previous weeks</li>
+			<li>Week 4: Create the UI to paint onto the image</li>
+			<li>Extra: Maybe add a 3d viewer to show the depth of brushstrokes</li>
+		</ul>
+
+		<h2>Resources</h2>
+		<ul>
+			<li>The application will potentially be written in Python and maybe 
+				JavaScript. The program might be able to run on the web if it's 
+				light enough (but the 3d viewer might require more).</li>
+			<li>Kuwahara filter</li>
+			<li>Image Thresholding</li>
+			<li>Edge Detection</li>
+			<li>Reducing the number of colors in an image: <a href = "https://dl.acm.org/doi/10.1145/800064.801294">https://dl.acm.org/doi/10.1145/800064.801294</a></li>
+			<li>Example of generating paint by numbers, which could be used as a benchmark: <a href = "https://www.digitpaints.com/en/generator">https://www.digitpaints.com/en/generator</a></li>
+		</ul>
+	</body>
+</html>
