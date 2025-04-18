@@ -21,56 +21,54 @@
 	</head>
 	<body>
 		<h1>Paint by Numbers, Coloring Book Sim — Milestone</h1>
-		<h4 style = "text-align: center;">By Keira Swei, Vivan Sinha, Robert Ni, and Kyle Cheng</h4>
-        <h4 style = "text-align: center;">Team 20</h4>
+		<h4 style = "text-align: center;">By Keira Swei, Vivan Sinha, Robert Ni, and Kyle Cheng (Team 20)</h4>
 
-        <h3>Links:</h3>
+        <h4>Links:
 			<a href="https://vivan.bio/184-Final-Project/index.html">Webpage</a>
-			<br><br>
 			<a href="https://www.youtube.com/watch?v=xqS7hM0a6Hg">Video</a>
-			<br><br>
 			<a href="https://docs.google.com/presentation/d/1Jzqd_YR6RlLzlu-myrogAe-ESFUb7VHVO5aH7oAvgb8/edit?usp=sharing">Slideshow</a>
+		</h4>
 
-		<h2>Progress Summary</h2>
+		<h3>Progress Summary</h3>
 		<p>
-			We have split the main parts of our project into four sections:
-			<ol style="padding-left:30px">
+			We have split our project into four sections:
+			<ol style="padding-left:20px">
 				<li>
-					Kuwahara filter: We have created a function to take in an unprocessed image and perform Kuwahara filtering on the image. This removes fine details that may detract from the overall paint-by-numbers style we are going for. The image we output will then be passed through K means clustering.
+					Kuwahara filter: We created a function to take in an unprocessed image and perform Kuwahara filtering on the image. This removes fine details that may detract from the overall paint-by-numbers style we are going for. The image we output will then be passed through K means clustering.
 				</li>
 				<li>
-					K means clustering: We implemented K means clustering on input images (images with and without Kuwahara filtering). This allows us to determine our k colors for color-by-numbers, by taking the clusters of the image (k groups of data in which are most similar to one another) and averaging the colors across the cluster.
+					K means clustering: We implemented K means clustering on input images. This allows us to determine our k colors for color-by-numbers, by taking the clusters of the image (k groups of data in which are most similar to one another) and averaging the colors across the cluster.
 				</li>
 				<li>
 					Region Clustering: We used flood fill (starting at a pixel that isn’t in an existing region and then for all unprocessed neighbors that are the same color: add it to that region and to a queue to flood a region recursively). Then we found regions that are under a certain number of pixels and combined them with whichever group it is most connected to (based on the number of adjacent pixels).
 				</li>
 				<li>
-					UI: We take the generated regions and allow users to click into them. By default we put a black border around each region to show separation. This border can be toggled later to see your painting more clearly. When a region is selected, we display the number of the color the region should be, and let users paint it in with a brush size of their choice. We apply a clipping mask to the input to make sure that you can’t draw outside the lines.
+					UI: We take the regions and allow users to click into them. We put a black border around each region to show separation, which can be toggled later to view the painting more clearly. When a region is selected, we display the number of the color of the region, and let users paint it in with a brush size of their choice. We apply a clipping mask to the input to make sure that you can’t draw outside the lines.
 				</li>
 			</ol>
 		</p>
 
-		<h2>Preliminary Results</h2>
-		<p>We have a working Kuwahara filter function, K means clustering function, and user interface. The user interface is set up well and is ready to receive inputs from images that we produce from filtering and clustering.
+		<h3>Preliminary Results</h3>
+		<p>We have a working Kuwahara filter function, K means clustering function, and user interface.
 			An example of filtering and clustering is shown below:
 		</p>
 		<p>We start with any given image: </p>
 		<figure>
-			<img src="../images/ren_original.png" alt="ren_original" style="width:50%"/>
+			<img src="../images/ren_original.png" alt="ren_original" style="width:45%"/>
 		</figure>
 		<p>Then we apply Kuwahara filtering (here, the window size is 8): </p>
 		<figure>
-			<img src="../images/ren_kuwahara_window8.png" alt="ren_kuwahara" style="width:50%"/>
+			<img src="../images/ren_kuwahara_window8.png" alt="ren_kuwahara" style="width:45%"/>
 		</figure>
 		<p>Lastly, we apply K means clustering (here, the number of colors is 5): </p>
 		<figure>
-			<img src="../images/ren_kuwahara_window8_kmeans5.png" alt="ren_kmeans" style="width:50%"/>
+			<img src="../images/ren_kuwahara_window8_kmeans5.png" alt="ren_kmeans" style="width:45%"/>
 		</figure>
-		<p>We can then input this into a UI to generate a paint by numbers that allows you to color in the image (refer to video for a demo of the UI).</p>
+		<p>We can then input this into our user interface (refer to video for a demo of the UI).</p>
 
-		<h2>Reflections and Next Steps</h2>
+		<h3>Reflections and Next Steps</h3>
 		Kuwahara filter:
-		<ul style="padding-left:30px">
+		<ul style="padding-left:20px">
 			<li>
 				We plan on playing with the window size of the Kuwahara filter before feeding the output image to the K-means clustering step.
 			</li>
@@ -79,25 +77,25 @@
 			</li>
 		</ul>
 		K means clustering:
-		<ul style="padding-left:30px">
+		<ul style="padding-left:20px">
 			<li>
-				Currently the K-means filter takes a little while to run, depending on the number of colors / clusters you are segmenting the image into. Based on how many colors we wish to use, we may need to optimize the K-means code, potentially by using C instead of Python.
+				The K-means filter takes a little while to run, depending on the number of colors / clusters you segment the image into. We may need to optimize the K-means code, potentially by using C instead of Python.
 			</li>
 			<li>
-				The K-means algorithm also produces very different results based on how you initialize the clusters. Currently we initialize the clusters to the first k data points, while this has been working, it is not necessarily the most robust, especially if the algorithm ends because max iterations have been reached rather than because the clusters have converged. Therefore, we likely will need to adjust this initialization.
+				We may need to adjust how the K-means algorithm initializes the clusters. Currently we initialize the clusters to the first k data points. This has been working, but it is not necessarily the most robust, especially if the algorithm ends because max iterations have been reached rather than because the clusters have converged.
 			</li>
 		</ul>
 		UI:
-		<ul style="padding-left:30px">
+		<ul style="padding-left:20px">
 			<li>
-				The current painting involves a solid fill and a flood fill. We might implement different brush strokes and textures.
+				The current painting involves a solid fill and a flood fill. We might implement different brush strokes.
 			</li>
 			<li>
 				We might include a checkbox to toggle whether the proper color should be selected upon clicking a region.
 			</li>
 		</ul>
 		Overall:
-		<ul style="padding-left:30px">
+		<ul style="padding-left:20px">
 			<li>
 				The Kuwahara filter and k-means clustering are written in python, and the UI is written in javascript. We might try to tie them together so we can take the output of one program and automatically feed it into the other. We might use a .sh script.
 			</li>
