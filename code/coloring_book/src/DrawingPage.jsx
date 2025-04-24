@@ -15,7 +15,18 @@ export default function DrawingPage(props) {
   const [brushWidth, setBrushWidth] = useState(10);
   const [showOutlines, setShowOutlines] = useState(true);
   const [lastPoint, setLastPoint] = useState(null);
-  const [isHoveringCanvas, setIsHoveringCanvas] = useState(false); // NEW
+  const [isHoveringCanvas, setIsHoveringCanvas] = useState(false);
+  const [autoSelectColor, setAutoSelectColor] = useState(false);
+
+  const getCursorStyle = () => {
+    if (selectedRegion) {
+      if (currentColor) {
+        return brushWidth < 50 ? "cursor-none" : "cursor-crosshair";
+      }
+      return "cursor-not-allowed";
+    }
+    return "cursor-pointer";
+  };
 
   useEffect(() => {
     const baseCanvas = canvasRef.current;
@@ -210,6 +221,9 @@ export default function DrawingPage(props) {
       for (const region of REGION_MAP) {
         if (region.pixels.has(`${x},${y}`)) {
           setSelectedRegion(region.name);
+          if (autoSelectColor) {
+            setCurrentColor(COLORS[region.colorNum]);
+          }
           break;
         }
       }
@@ -288,7 +302,7 @@ export default function DrawingPage(props) {
           No region selected — click inside one to begin
         </p>
       )}
-      <div className="flex flex-col items-center w-full max-w-6xl mb-6">
+      <div className="flex flex-col items-center w-full max-w-6xl mb-1">
         <div className="flex items-center justify-center gap-4">
           <label htmlFor="brushWidth" className="text-lg">Brush Width:</label>
           <input
@@ -321,7 +335,7 @@ export default function DrawingPage(props) {
           ref={canvasWrapperRef}
           onMouseEnter={() => setIsHoveringCanvas(true)}
           onMouseLeave={() => setIsHoveringCanvas(false)}
-          className={`relative bg-white border-2 border-gray-300 rounded shadow-lg ${selectedRegion ? (currentColor ? "cursor-none" : "cursor-not-allowed") : "cursor-pointer"}`}
+          className={`relative mt-5 bg-white ${getCursorStyle()}`}
           style={{ width: DIMENSIONS.width, height: DIMENSIONS.height }}
         >
           {!selectedRegion && (
@@ -356,6 +370,9 @@ export default function DrawingPage(props) {
           />
         </div>
         <div ref={paletteRef} className="flex flex-col items-center justify-center">
+          <div className={`mt-4 text-xs px-2 py-1 rounded-full mb-3 border border-gray-400 flex items-center gap-2 cursor-pointer ${autoSelectColor ? "bg-blue-200" : "bg-white"}`} onClick={() => setAutoSelectColor(prev => !prev)}>
+            Auto-Select
+          </div>
           <h2 className="text-lg font-semibold mb-2">Colors:</h2>
           <div className="flex flex-col items-center">
             {COLORS.map((color, index) => {
