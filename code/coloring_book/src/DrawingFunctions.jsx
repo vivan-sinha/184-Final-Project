@@ -87,24 +87,32 @@ const useCanvas = (DIMENSIONS) => {
             }
           });
         });
+        
+        // OLD: color labels on regions
+        // ctx.font = "20px sans-serif";
+        // ctx.textAlign = "center";
+        // ctx.textBaseline = "middle";
   
-        ctx.font = "20px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-  
-        REGION_MAP.forEach(({ pixels, colorNum }) => {
-          let sumX = 0, sumY = 0, count = 0;
-          pixels.forEach(key => {
-            const [x, y] = key.split(",").map(Number);
-            sumX += x;
-            sumY += y;
-            count++;
-          });
-          const centerX = Math.round(sumX / count);
-          const centerY = Math.round(sumY / count);
-        });
+        // REGION_MAP.forEach(({ pixels, colorNum }) => {
+        //   let sumX = 0, sumY = 0, count = 0;
+        //   pixels.forEach(key => {
+        //     const [x, y] = key.split(",").map(Number);
+        //     sumX += x;
+        //     sumY += y;
+        //     count++;
+        //   });
+        //   const centerX = Math.round(sumX / count);
+        //   const centerY = Math.round(sumY / count);
+        // });
       }
     }, [DIMENSIONS, selectedRegion, showOutlines, REGION_MAP]);
+  
+    useEffect(() => {
+      if (!currentColor) {
+        const ctx = cursorRef.current.getContext("2d");
+        ctx.clearRect(0, 0, DIMENSIONS.width, DIMENSIONS.height);
+      }
+    }, [currentColor, cursorRef, DIMENSIONS.width, DIMENSIONS.height]);
   
     const getCursorPos = (e) => {
       const rect = canvasRef.current.getBoundingClientRect();
