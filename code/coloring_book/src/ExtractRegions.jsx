@@ -125,6 +125,22 @@ const extractRegions = (
       colorNum: r.colorNum
     }));
 
+    // Precompute border pixels for each region
+    mergedRegions.forEach(region => {
+      const borderPixels = new Set();
+      region.pixels.forEach(pixel => {
+        const [x, y] = pixel.split(",").map(Number);
+        const neighbors = [
+          `${x - 1},${y}`, `${x + 1},${y}`,
+          `${x},${y - 1}`, `${x},${y + 1}`
+        ];
+        if (neighbors.some(n => !region.pixels.has(n))) {
+          borderPixels.add(pixel);
+        }
+      });
+      region.borderPixels = borderPixels;
+    });
+
     setColors(colors);
     setRegionMap(mergedRegions);
 

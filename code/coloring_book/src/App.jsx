@@ -4,7 +4,7 @@ import DrawingPage from './DrawingPage';
 
 export default function App() {
   const [step, setStep] = useState("upload");
-  const [regionMap, setRegionMap] = useState(null);
+  const [regionMap, setRegionMap] = useState([]);
   const [colors, setColors] = useState([]);
   const [filename, setFilename] = useState("Uploaded Image");
   const [dimensions, setDimensions] = useState({ width: 640, height: 480 });

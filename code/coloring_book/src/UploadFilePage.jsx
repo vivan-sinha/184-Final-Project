@@ -4,7 +4,7 @@ import { ExampleTransformation } from './ExampleTranformation';
 
 export default function UploadFilePage({ onComplete }) {
   const [colors, setColors] = useState([]);
-  const [regionMap, setRegionMap] = useState({});
+  const [regionMap, setRegionMap] = useState([]);
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   const [SMALL_REGION_THRESHOLD, set_SMALL_REGION_THRESHOLD] = useState(50);
   const canvasRef = useRef();

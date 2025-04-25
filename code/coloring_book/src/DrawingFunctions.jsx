@@ -38,73 +38,42 @@ const useCanvas = (DIMENSIONS) => {
     const [selectedRegion, setSelectedRegion] = useState(null);
     const [brushWidth, setBrushWidth] = useState(10);
     const [lastPoint, setLastPoint] = useState(null);
-  
+
     useEffect(() => {
-      const highlightCanvas = highlightRef.current;
-      highlightCanvas.width = DIMENSIONS.width;
-      highlightCanvas.height = DIMENSIONS.height;
+        const highlightCanvas = highlightRef.current;
+        highlightCanvas.width = DIMENSIONS.width;
+        highlightCanvas.height = DIMENSIONS.height;
   
-      const ctx = highlightCanvas.getContext("2d");
-      ctx.clearRect(0, 0, highlightCanvas.width, highlightCanvas.height);
+        const ctx = highlightCanvas.getContext("2d");
+        ctx.clearRect(0, 0, highlightCanvas.width, highlightCanvas.height);
   
-      const isBorderPixel = (region, x, y) => {
-        const key = `${x},${y}`;
-        if (!region.has(key)) return false;
-        const neighbors = [
-          `${x - 1},${y}`, `${x + 1},${y}`,
-          `${x},${y - 1}`, `${x},${y + 1}`
-        ];
-        return neighbors.some(n => !region.has(n));
-      };
+        if (selectedRegion) {
+            const region = REGION_MAP.find(r => r.name === selectedRegion);
   
-      if (selectedRegion) {
-        const region = REGION_MAP.find(r => r.name === selectedRegion);
+            ctx.fillStyle = "black";
+            region.borderPixels.forEach(key => {
+                const [x, y] = key.split(",").map(Number);
+                ctx.fillRect(x, y, 1, 1);
+            });
   
-        ctx.fillStyle = "black";
-        region.pixels.forEach((key) => {
-          const [x, y] = key.split(",").map(Number);
-          if (isBorderPixel(region.pixels, x, y)) {
-            ctx.fillRect(x, y, 1, 1);
-          }
-        });
-  
-        ctx.fillStyle = "rgba(128,128,128,0.8)";
-        for (let x = 0; x < highlightCanvas.width; x++) {
-          for (let y = 0; y < highlightCanvas.height; y++) {
-            if (!region.pixels.has(`${x},${y}`)) {
-              ctx.fillRect(x, y, 1, 1);
+            ctx.fillStyle = "rgba(128,128,128,0.8)";
+            for (let x = 0; x < highlightCanvas.width; x++) {
+                for (let y = 0; y < highlightCanvas.height; y++) {
+                    if (!region.pixels.has(`${x},${y}`)) {
+                        ctx.fillRect(x, y, 1, 1);
+                    }
+                }
             }
-          }
+  
+        } else if (showOutlines) {
+            ctx.fillStyle = "black";
+            REGION_MAP.forEach(region => {
+                region.borderPixels.forEach(key => {
+                    const [x, y] = key.split(",").map(Number);
+                    ctx.fillRect(x, y, 1, 1);
+                });
+            });
         }
-  
-      } else if (showOutlines) {
-        ctx.fillStyle = "black";
-        REGION_MAP.forEach(({ pixels }) => {
-          pixels.forEach((key) => {
-            const [x, y] = key.split(",").map(Number);
-            if (isBorderPixel(pixels, x, y)) {
-              ctx.fillRect(x, y, 1, 1);
-            }
-          });
-        });
-        
-        // OLD: color labels on regions
-        // ctx.font = "20px sans-serif";
-        // ctx.textAlign = "center";
-        // ctx.textBaseline = "middle";
-  
-        // REGION_MAP.forEach(({ pixels, colorNum }) => {
-        //   let sumX = 0, sumY = 0, count = 0;
-        //   pixels.forEach(key => {
-        //     const [x, y] = key.split(",").map(Number);
-        //     sumX += x;
-        //     sumY += y;
-        //     count++;
-        //   });
-        //   const centerX = Math.round(sumX / count);
-        //   const centerY = Math.round(sumY / count);
-        // });
-      }
     }, [DIMENSIONS, selectedRegion, showOutlines, REGION_MAP]);
   
     useEffect(() => {
@@ -270,5 +239,5 @@ const useCanvas = (DIMENSIONS) => {
       drawCursor
     };
   };
-
+  
   export { useCanvas, useDrawing };
