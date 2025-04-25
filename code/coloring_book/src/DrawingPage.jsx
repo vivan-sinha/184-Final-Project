@@ -40,11 +40,8 @@ export default function DrawingPage(props) {
       const clickedOutside = isOutsideCanvas && isOutsidePalette;
 
       if (clickedOutside && !drawing) {
-        if (selectedRegion !== null) {
-          setSelectedRegion(null);
-        } else {
-          setCurrentColor(null);
-        }
+        setCurrentColor(null);
+        setSelectedRegion(null);
       }
     };
 
@@ -52,7 +49,29 @@ export default function DrawingPage(props) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [drawing, selectedRegion, setCurrentColor, setSelectedRegion]);
+  }, [drawing, setCurrentColor, setSelectedRegion]);
+
+  const downloadImage = async () => {
+    try {
+      const blob = await new Promise(resolve => {
+        canvasRef.current.toBlob(resolve, 'image/png');
+      });
+      const fileHandle = await window.showSaveFilePicker({
+        suggestedName: "Paint by Numbers - " + FILENAME.replace(/\.json$/, ''),
+        types: [{
+          description: 'PNG Image',
+          accept: { 'image/png': ['.png'] }
+        }]
+      });
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Error saving file:', err);
+      }
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -63,11 +82,42 @@ export default function DrawingPage(props) {
       }
     };
 
+    const handleOutlineToggle = (e) => {
+      if (e.key.toLowerCase() === 'o') {
+        setShowOutlines(prev => !prev);
+      }
+    };
+
+    const handleSave = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        downloadImage();
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleOutlineToggle);
+    window.addEventListener("keydown", handleSave);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleOutlineToggle);
+      window.removeEventListener("keydown", handleSave);
     };
-  }, [COLORS, isHoveringCanvas, setCurrentColor]);
+  }, [COLORS, isHoveringCanvas, setCurrentColor, FILENAME]);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        setCurrentColor(null);
+        setSelectedRegion(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [setCurrentColor, setSelectedRegion]);
 
   const getCursorStyle = () => {
     if (selectedRegion) {
@@ -121,43 +171,51 @@ export default function DrawingPage(props) {
         </div>
       </div>
       <div className="flex flex-row gap-6 w-full max-w-6xl justify-center items-center">
-        <div
-          ref={canvasWrapperRef}
-          onMouseEnter={() => setIsHoveringCanvas(true)}
-          onMouseLeave={() => setIsHoveringCanvas(false)}
-          className={`relative mt-5 bg-white ${getCursorStyle()}`}
-          style={{ width: DIMENSIONS.width, height: DIMENSIONS.height }}
-        >
-          {!selectedRegion && (
-            <button
-              onClick={() => setShowOutlines(prev => !prev)}
-              className="absolute top-2 right-2 z-30 bg-white/80 border border-gray-400 rounded px-3 py-1 text-sm shadow hover:bg-white"
-            >
-              {showOutlines ? "Hide Outlines" : "Show Outlines"}
-            </button>
-          )}
-          <canvas
-            ref={canvasRef}
-            style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px` }}
-            className="absolute top-0 left-0 z-0"
-            onMouseDown={startDraw}
-            onMouseUp={endDraw}
-            onMouseMove={(e) => { draw(e); drawCursor(e); }}
-            onMouseLeave={(e) => {
-              endDraw();
-              cursorRef.current.getContext("2d").clearRect(0, 0, DIMENSIONS.width, DIMENSIONS.height);
-            }}
-          />
-          <canvas
-            ref={highlightRef}
-            style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px` }}
-            className="absolute top-0 left-0 z-10 pointer-events-none"
-          />
-          <canvas
-            ref={cursorRef}
-            style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px`, cursor: "none" }}
-            className="absolute top-0 left-0 z-20 pointer-events-none"
-          />
+        <div className="flex flex-col items-center">
+          <div
+            ref={canvasWrapperRef}
+            onMouseEnter={() => setIsHoveringCanvas(true)}
+            onMouseLeave={() => setIsHoveringCanvas(false)}
+            className={`relative mt-5 bg-white ${getCursorStyle()}`}
+            style={{ width: DIMENSIONS.width, height: DIMENSIONS.height }}
+          >
+            {!selectedRegion && (
+              <button
+                onClick={() => setShowOutlines(prev => !prev)}
+                className="absolute top-2 right-2 z-30 bg-white/80 border border-gray-400 rounded px-3 py-1 text-sm shadow hover:bg-white"
+              >
+                {showOutlines ? "Hide Outlines" : "Show Outlines"}
+              </button>
+            )}
+            <canvas
+              ref={canvasRef}
+              style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px` }}
+              className="absolute top-0 left-0 z-0"
+              onMouseDown={startDraw}
+              onMouseUp={endDraw}
+              onMouseMove={(e) => { draw(e); drawCursor(e); }}
+              onMouseLeave={(e) => {
+                endDraw();
+                cursorRef.current.getContext("2d").clearRect(0, 0, DIMENSIONS.width, DIMENSIONS.height);
+              }}
+            />
+            <canvas
+              ref={highlightRef}
+              style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px` }}
+              className="absolute top-0 left-0 z-10 pointer-events-none"
+            />
+            <canvas
+              ref={cursorRef}
+              style={{ width: `${DIMENSIONS.width}px`, height: `${DIMENSIONS.height}px`, cursor: "none" }}
+              className="absolute top-0 left-0 z-20 pointer-events-none"
+            />
+          </div>
+          <button
+            onClick={downloadImage}
+            className="mt-2 text-black hover:text-blue-800 cursor-pointer underline"
+          >
+            Download Current Image
+          </button>
         </div>
         <div ref={paletteRef} className="flex flex-col items-center justify-center">
           <div className={`mt-4 text-xs px-2 py-1 rounded-full mb-3 border border-gray-400 flex items-center gap-2 cursor-pointer ${autoSelectColor ? "bg-blue-200" : "bg-white"}`} onClick={() => setAutoSelectColor(prev => !prev)}>

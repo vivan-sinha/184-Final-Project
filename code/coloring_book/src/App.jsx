@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import RegionExtractor from './RegionExtractor';
+import UploadFilePage from './UploadFilePage';
 import DrawingPage from './DrawingPage';
 
 export default function App() {
@@ -20,7 +20,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-100">
       {step === "upload" ? (
-        <RegionExtractor onComplete={handleExtractionComplete} />
+        <UploadFilePage onComplete={handleExtractionComplete} />
       ) : (
         <DrawingPage
           FILENAME={filename}

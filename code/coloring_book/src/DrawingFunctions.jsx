@@ -185,6 +185,7 @@ const useCanvas = (DIMENSIONS) => {
           drawDot(x, y);
         } else {
           setSelectedRegion(null);
+          setCurrentColor(null);
         }
       } else {
         for (const region of REGION_MAP) {
