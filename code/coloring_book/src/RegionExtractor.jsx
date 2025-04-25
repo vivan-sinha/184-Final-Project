@@ -55,6 +55,16 @@ export default function RegionExtractor({ onComplete }) {
       img.onload = () => processImage(img, file.name);
       img.src = URL.createObjectURL(file);
     }
+
+    const canvas = canvasRef.current;
+    canvas.width = img.width;
+    canvas.height = img.height;
+    setImageDimensions({ width: img.width, height: img.height });
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+
+    // const { data, width, height } = ctx.getImageData(0, 0, img.width, img.height);
   };
 
   const handleImageUpload = (e) => {
@@ -76,12 +86,7 @@ export default function RegionExtractor({ onComplete }) {
 
   const processImage = (img, originalFilename) => {
     const canvas = canvasRef.current;
-    canvas.width = img.width;
-    canvas.height = img.height;
-    setImageDimensions({ width: img.width, height: img.height });
-
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
 
     const { data, width, height } = ctx.getImageData(0, 0, img.width, img.height);
     const visited = Array.from({ length: height }, () => Array(width).fill(false));
