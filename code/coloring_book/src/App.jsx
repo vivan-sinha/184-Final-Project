@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import RegionExtractor from './RegionExtractor';
+import UploadFilePage from './UploadFilePage';
 import DrawingPage from './DrawingPage';
 
 export default function App() {
   const [step, setStep] = useState("upload");
-  const [regionMap, setRegionMap] = useState(null);
+  const [regionMap, setRegionMap] = useState([]);
   const [colors, setColors] = useState([]);
   const [filename, setFilename] = useState("Uploaded Image");
   const [dimensions, setDimensions] = useState({ width: 640, height: 480 });
@@ -20,7 +20,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-100">
       {step === "upload" ? (
-        <RegionExtractor onComplete={handleExtractionComplete} />
+        <UploadFilePage onComplete={handleExtractionComplete} />
       ) : (
         <DrawingPage
           FILENAME={filename}
