@@ -189,40 +189,50 @@ const useCanvas = (DIMENSIONS) => {
       if (!inSelectedRegion(x, y)) return;
   
       const [lastX, lastY] = lastPoint;
-  
-      const r = Math.ceil(brushWidth / 2);
-      const minX = Math.max(0, Math.min(lastX, x) - r);
-      const maxX = Math.min(canvasRef.current.width - 1, Math.max(lastX, x) + r);
-      const minY = Math.max(0, Math.min(lastY, y) - r);
-      const maxY = Math.min(canvasRef.current.height - 1, Math.max(lastY, y) + r);
-  
-      applyMaskedDrawing((ctx) => {
-        ctx.lineWidth = brushWidth;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = currentColor;
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-      }, [minX, minY, maxX, maxY]);
-  
+
+      const dx = x - lastX;
+      const dy = y - lastY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      //const steps = Math.ceil(distance / 2);
+      const steps = Math.ceil(distance / brushWidth);
+
+    
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const interpX = lastX + t * dx;
+        const interpY = lastY + t * dy;
+        drawDot(interpX, interpY);
+      }
+
       setLastPoint([x, y]);
     };
-  
+
     const drawDot = (x, y) => {
       const r = Math.ceil(brushWidth / 2);
       const minX = Math.max(0, x - r);
       const maxX = Math.min(canvasRef.current.width - 1, x + r);
       const minY = Math.max(0, y - r);
       const maxY = Math.min(canvasRef.current.height - 1, y + r);
-  
+
+      //const numParticles = Math.floor(brushWidth * 2);
+      const numParticles = Math.floor(Math.pow(brushWidth, 1.2));
+
       applyMaskedDrawing((ctx) => {
-        ctx.beginPath();
-        ctx.arc(x, y, brushWidth / 2, 0, 2 * Math.PI);
         ctx.fillStyle = currentColor;
-        ctx.fill();
+        for (let i = 0; i < numParticles; i++) {
+          const angle = Math.random() * 2 * Math.PI;
+          const radius = Math.random() * (brushWidth / 2);
+          const offsetX = Math.cos(angle) * radius;
+          const offsetY = Math.sin(angle) * radius;
+          ctx.beginPath();
+          //ctx.arc(x + offsetX, y + offsetY, 1.2, 0, 2 * Math.PI);
+          ctx.fillRect(x + offsetX, y + offsetY, 1, 1);
+
+          ctx.fill();
+        }
       }, [minX, minY, maxX, maxY]);
     };
+    
   
     return {
       drawing,
