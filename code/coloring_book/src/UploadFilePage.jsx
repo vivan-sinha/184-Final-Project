@@ -1,12 +1,14 @@
 import React, { useRef, useState } from 'react';
 import { extractRegions } from './ExtractRegions';
 import { ExampleTransformation } from './ExampleTranformation';
+import { KMeansTransformation } from './KMeansTransformation';
 
 export default function UploadFilePage({ onComplete }) {
   const [colors, setColors] = useState([]);
   const [regionMap, setRegionMap] = useState([]);
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   const [SMALL_REGION_THRESHOLD, set_SMALL_REGION_THRESHOLD] = useState(50);
+  const [numColors, setNumColors] = useState(5);
   const canvasRef = useRef();
   const fileInputRef = useRef();
 
@@ -23,6 +25,7 @@ export default function UploadFilePage({ onComplete }) {
       
       // Whatever other image processing kuwahara, kmeans, etc.
       // ExampleTransformation(ctx, img); // FLIP COLORS
+      KMeansTransformation(ctx, img, numColors);
 
       extractRegions(
         ctx,
@@ -112,10 +115,16 @@ export default function UploadFilePage({ onComplete }) {
   return (
     <div className="flex flex-col h-[100vh] items-center justify-center p-6 space-y-10">
       <h1 className="text-6xl font-semibold">Region Extractor</h1>
-      <span>Small Region Threshold: <input type="number" min={1} max={200} value={SMALL_REGION_THRESHOLD} 
+      <div className="flex gap-10 items-center">
+        <span>Small Region Threshold: <input type="number" min={1} max={200} value={SMALL_REGION_THRESHOLD} 
             onChange={(e) => {
               const val = Math.max(1, Math.min(200, Number(e.target.value)));
               set_SMALL_REGION_THRESHOLD(val)}} className="no-spinner border-b outline-0 text-center" /></span>
+        <span> Number of Colors:{" "} <input type="number" min={2} max={30} value={numColors}
+            onChange={(e) => {
+              const val = Math.max(2, Math.min(256, Number(e.target.value)));
+            setNumColors(val); }} className="no-spinner border-b outline-0 text-center"/></span>
+      </div>
       <div
         className="flex flex-col items-center justify-center w-[75vw] h-40 align-middle border-4 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition"
         onClick={() => fileInputRef.current?.click()}
