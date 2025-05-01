@@ -30,7 +30,7 @@ export default function DrawingPage(props) {
     endDraw,
     draw,
     drawCursor
-  } = useDrawing(canvasRef, highlightRef, cursorRef, DIMENSIONS, REGION_MAP, showOutlines, autoSelectColor, COLORS);
+  } = useDrawing(canvasRef, highlightRef, cursorRef, DIMENSIONS, REGION_MAP, showOutlines, autoSelectColor, COLORS, sprayMode);
 
   // Event handlers
   useEffect(() => {
