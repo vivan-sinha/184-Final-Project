@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kmeans</title>
+</head>
+<body>
+  <h1 style = "display: flex; justify-content: space-around;">Kmeans</h1>
+
+  <div style="display: flex; flex-direction: row; justify-content: space-around; padding: 50px; gap: 40px;">
+    <div style="display: flex; flex-direction: column; align-items: center; width: 320px;">
+      <h3>Original Image</h3>
+      <div style="width: 300px; height: 300px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
+        <img id="originalImg" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+      <br>
+      <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload()">
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; width: 320px;">
+      <h3>Segmented Image</h3>
+      <div style="width: 300px; height: 300px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
+        <img id="segmentedImg" style="width: 100%; height: 100%; object-fit: contain; display: none;">
+      </div>
+      <br>
+      <div style="display: flex; flex-direction: row; gap: 5px;">
+        <label for="kInput">Number of Colors (k): </label>
+        <input type="number" id="kInput" value="5" min="2" max="20">
+      </div>
+      <br>
+      <button onclick="submitK()">Submit</button>
+    </div>
+  </div>
+
+  <script>
+    let currentImageFile = null;
+
+    function handleImageUpload() {
+      const input = document.getElementById('imageInput');
+      const file = input.files[0];
+      if (!file) return;
+
+      currentImageFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        document.getElementById('originalImg').src = reader.result;
+        const segmentedImg = document.getElementById('segmentedImg');
+        segmentedImg.src = '';
+        segmentedImg.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitK() {
+      const k = document.getElementById('kInput').value;
+      const file = currentImageFile;
+
+      if (!file || !k || k < 2) {
+        alert("Please upload an image and enter a valid number of colors (k ≥ 2).");
+        return;
+      }
+
+      const segmentedImg = document.getElementById('segmentedImg');
+      segmentedImg.src = '';
+      segmentedImg.style.display = 'none';
+
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("k", k);
+
+      fetch("/segment", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        segmentedImg.src = url;
+        segmentedImg.style.display = 'block';
+      });
+    }
+  </script>
+</body>
+</html>

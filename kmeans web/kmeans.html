@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kmeans</title>
+</head>
+<body>
+  <h1 style="display: flex; justify-content: space-around;">Kmeans</h1>
+
+  <div style="display: flex; flex-direction: row; justify-content: space-around; padding: 50px; gap: 40px;">
+    <div style="display: flex; flex-direction: column; align-items: center; width: 320px;">
+      <h3>Original Image</h3>
+      <div style="width: 300px; height: 300px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
+        <img id="originalImg" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+      <br>
+      <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload()">
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; width: 320px;">
+      <h3>Segmented Image</h3>
+      <div style="width: 300px; height: 300px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
+        <img id="segmentedImg" style="width: 100%; height: 100%; object-fit: contain; display: none;">
+      </div>
+      <br>
+      <div style="display: flex; flex-direction: row; gap: 5px;">
+        <label for="kInput">Number of Colors (k): </label>
+        <input type="number" id="kInput" value="5" min="2" max="20">
+      </div>
+      <br>
+      <button onclick="submitK()">Submit</button>
+    </div>
+  </div>
+
+  <canvas id="canvas" style="display: none;"></canvas>
+
+  <script>
+    let currentImage = null;
+
+    function handleImageUpload() {
+      const input = document.getElementById('imageInput');
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const img = new Image();
+        img.onload = function () {
+          currentImage = img;
+          document.getElementById('originalImg').src = reader.result;
+          document.getElementById('segmentedImg').style.display = 'none';
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitK() {
+      const k = parseInt(document.getElementById('kInput').value);
+      if (!currentImage || isNaN(k) || k < 2) {
+        alert("Please upload an image and enter a valid number of colors (k ≥ 2).");
+        return;
+      }
+
+      const max_iter = 400;
+
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = currentImage.width;
+      canvas.height = currentImage.height;
+      ctx.drawImage(currentImage, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      
+      // get (r,g,b,a) data from the imageData
+      const data = imageData.data;
+      const pixels = [];
+
+      // reshape image into datapoints
+      for (let i = 0; i < data.length; i += 4) {
+        pixels.push([data[i], data[i + 1], data[i + 2]]);
+      }
+
+      // randomly select k distinct data points
+      let centroids = [];
+      const used = new Set();
+      while (centroids.length < k) {
+        const idx = Math.floor(Math.random() * pixels.length);
+        if (!used.has(idx)) {
+          centroids.push(pixels[idx]);
+          used.add(idx);
+        }
+      }
+ 
+      let labels = new Array(pixels.length);
+      for (let iter = 0; iter < max_iter; iter++) {
+        for (let i = 0; i < pixels.length; i++) {
+          // find min distances from points to the current centroids 
+          let minDist = Infinity;
+          let label = 0;
+          for (let j = 0; j < k; j++) {
+            const dist = euclidean(pixels[i], centroids[j]);
+            if (dist < minDist) {
+              minDist = dist;
+              label = j;
+            }
+          }
+          // assign each datapoint to their nearest cluster
+          labels[i] = label;
+        }
+
+        // update centroids by averaging points in each cluster
+        let newCentroids = Array(k).fill(0).map(() => [0, 0, 0]);
+        let counts = Array(k).fill(0);
+        for (let i = 0; i < pixels.length; i++) {
+          const label = labels[i];
+          newCentroids[label][0] += pixels[i][0];  // r
+          newCentroids[label][1] += pixels[i][1]; // g
+          newCentroids[label][2] += pixels[i][2]; // b
+          counts[label]++;
+        }
+
+        for (let j = 0; j < k; j++) {
+          if (counts[j] === 0) continue;
+          newCentroids[j][0] /= counts[j];
+          newCentroids[j][1] /= counts[j];
+          newCentroids[j][2] /= counts[j];
+        }
+
+        // check for convergence
+        if (JSON.stringify(centroids) === JSON.stringify(newCentroids)) break;
+        centroids = newCentroids;
+      }
+
+      for (let i = 0; i < pixels.length; i++) {
+        const [r, g, b] = centroids[labels[i]];
+        data[i * 4] = Math.round(r);
+        data[i * 4 + 1] = Math.round(g);
+        data[i * 4 + 2] = Math.round(b);
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      const segmentedURL = canvas.toDataURL();
+      const segmentedImg = document.getElementById('segmentedImg');
+      segmentedImg.src = segmentedURL;
+      segmentedImg.style.display = 'block';
+    }
+
+    function euclidean(a, b) {
+      return Math.sqrt(
+        (a[0] - b[0]) ** 2 +
+        (a[1] - b[1]) ** 2 +
+        (a[2] - b[2]) ** 2
+      );
+    }
+  </script>
+</body>
+</html>
