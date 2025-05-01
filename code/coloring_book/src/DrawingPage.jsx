@@ -8,6 +8,7 @@ export default function DrawingPage(props) {
   const paletteRef = useRef(null);
   const [showOutlines, setShowOutlines] = useState(true);
   const [autoSelectColor, setAutoSelectColor] = useState(false);
+  const [sprayMode, setSprayMode] = useState(false);
 
   const {
     canvasRef,
@@ -218,6 +219,18 @@ export default function DrawingPage(props) {
           </button>
         </div>
         <div ref={paletteRef} className="flex flex-col items-center justify-center">
+        <div className="mb-4">
+          <label htmlFor="mode-select" className="mr-2 font-medium">Mode:</label>
+          <select
+            id="mode-select"
+            value={sprayMode ? "spray" : "normal"}
+            onChange={(e) => setSprayMode(e.target.value === "spray")}
+            className="border border-gray-300 rounded px-2 py-1"
+          >
+            <option value="normal">Normal</option>
+            <option value="spray">Spray</option>
+          </select>
+        </div>
           <div className={`mt-4 text-xs px-2 py-1 rounded-full mb-3 border border-gray-400 flex items-center gap-2 cursor-pointer ${autoSelectColor ? "bg-blue-200" : "bg-white"}`} onClick={() => setAutoSelectColor(prev => !prev)}>
             Auto-Select
           </div>
