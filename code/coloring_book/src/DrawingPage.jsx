@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import {useCanvas, useDrawing} from "./drawingFunctions";
+import {useCanvas, useDrawing} from "./DrawingFunctions";
 
 // Main component
 export default function DrawingPage(props) {
