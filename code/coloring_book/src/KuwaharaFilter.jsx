@@ -1,25 +1,25 @@
 function KuwaharaFilter(ctx, width, height) {
-  const windowSize = 15;
-  const quadrantSize = Math.ceil(windowSize / 2);
-  const { hsvArray } = getImageHSVArray(ctx, width, height);
+    const windowSize = 15;
+    const quadrantSize = Math.ceil(windowSize / 2);
+    const { hsvArray } = getImageHSVArray(ctx, width, height);
 
-  const imageData = ctx.createImageData(width, height);
-  const result = imageData.data;
+    const imageData = ctx.createImageData(width, height);
+    const result = imageData.data;
 
-  const getHSV = (x, y) => {
-      if (x < 0 || y < 0 || x >= width || y >= height) return null;
-      return hsvArray[y * width + x];
-  };
+    const getHSV = (x, y) => {
+        if (x < 0 || y < 0 || x >= width || y >= height) return null;
+        return hsvArray[y * width + x];
+    };
 
-  for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
             const tl_x = Math.max(0, Math.floor(x - windowSize / 2));
             const tl_y = Math.max(0, Math.floor(y - windowSize / 2));
             const mid_x = Math.min(width, tl_x + quadrantSize);
             const mid_y = Math.min(height, tl_y + quadrantSize);
             const wind_x = Math.min(width, tl_x + windowSize);
             const wind_y = Math.min(height, tl_y + windowSize);
-            
+
             const quadrants = [[], [], [], []];
 
             for (let j = tl_y; j < wind_y; j++) {
@@ -71,7 +71,7 @@ function KuwaharaFilter(ctx, width, height) {
             result[idx + 2] = b;
             result[idx + 3] = 255;
         }
-  }
+    }
 
   ctx.putImageData(imageData, 0, 0);
 }

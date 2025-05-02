@@ -235,7 +235,7 @@ export default function DrawingPage(props) {
             Auto-Select
           </div>
           <h2 className="text-lg font-semibold mb-2">Colors:</h2>
-          <div className="flex flex-col items-center">
+          <div className="grid grid-rows-7 grid-flow-col gap-2 items-start">
             {COLORS.map((color, index) => {
               const isSelected = color === currentColor;
               return (
