@@ -1,77 +1,80 @@
 function KuwaharaFilter(ctx, width, height) {
-    const windowSize = 15;
-    const quadrantSize = Math.ceil(windowSize / 2);
-    const { hsvArray } = getImageHSVArray(ctx, width, height);
-    const result = new Uint8ClampedArray(width * height * 4);
-  
-    const getHSV = (x, y) => {
-      if (x >= width || y >= height) return null;
+  const windowSize = 15;
+  const quadrantSize = Math.ceil(windowSize / 2);
+  const { hsvArray } = getImageHSVArray(ctx, width, height);
+
+  const imageData = ctx.createImageData(width, height);
+  const result = imageData.data;
+
+  const getHSV = (x, y) => {
+      if (x < 0 || y < 0 || x >= width || y >= height) return null;
       return hsvArray[y * width + x];
-    };
-  
-    for (let y = 0; y < height; y += 2) {
-      for (let x = 0; x < width; x += 2) {
-        const tl_x = Math.max(0, Math.floor(x - windowSize / 2));
-        const tl_y = Math.max(0, Math.floor(y - windowSize / 2));
-        const mid_x = Math.min(width, tl_x + quadrantSize);
-        const mid_y = Math.min(height, tl_y + quadrantSize);
-        const wind_x = Math.min(width, tl_x + windowSize);
-        const wind_y = Math.min(height, tl_y + windowSize);
-  
-        const quadrants = [
-          [], [], [], []
-        ];
-  
-        for (let j = tl_y; j < wind_y; j++) {
-          for (let i = tl_x; i < wind_x; i++) {
-            const hsv = getHSV(i, j);
-            if (!hsv) continue;
-  
-            if (j < mid_y && i < mid_x) quadrants[0].push(hsv);
-            else if (j < mid_y && i >= mid_x) quadrants[1].push(hsv);
-            else if (j >= mid_y && i < mid_x) quadrants[2].push(hsv);
-            else quadrants[3].push(hsv);
-          }
-        }
-  
-        const stdDevs = quadrants.map(q => {
-          if (q.length === 0) return Infinity;
-          const vValues = q.map(p => p[2]);
-          const mean = vValues.reduce((a, b) => a + b, 0) / vValues.length;
-          const variance = vValues.reduce((sum, val) => sum + (val - mean) ** 2, 0) / vValues.length;
-          return Math.sqrt(variance);
-        });
-  
-        const bestIndex = stdDevs.indexOf(Math.min(...stdDevs));
-        const bestQuadrant = quadrants[bestIndex];
-  
-        const avg = [0, 0, 0];
-        bestQuadrant.forEach(([h, s, v]) => {
-          avg[0] += h;
-          avg[1] += s;
-          avg[2] += v;
-        });
-        avg[0] /= bestQuadrant.length;
-        avg[1] /= bestQuadrant.length;
-        avg[2] /= bestQuadrant.length;
-  
-        const [r, g, b] = hsvToRgb(avg[0] / 255, avg[1] / 255, avg[2] / 255);
-  
-        for (let dy = 0; dy < 2; dy++) {
-          for (let dx = 0; dx < 2; dx++) {
-            const yy = y + dy;
-            const xx = x + dx;
-            if (yy >= height || xx >= width) continue;
-            const idx = (yy * width + xx) * 4;
+  };
+
+  for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+            const tl_x = Math.max(0, Math.floor(x - windowSize / 2));
+            const tl_y = Math.max(0, Math.floor(y - windowSize / 2));
+            const mid_x = Math.min(width, tl_x + quadrantSize);
+            const mid_y = Math.min(height, tl_y + quadrantSize);
+            const wind_x = Math.min(width, tl_x + windowSize);
+            const wind_y = Math.min(height, tl_y + windowSize);
+            
+            const quadrants = [[], [], [], []];
+
+            for (let j = tl_y; j < wind_y; j++) {
+                for (let i = tl_x; i < wind_x; i++) {
+                    const hsv = getHSV(i, j);
+                    if (!hsv) continue;
+
+                    if (j < mid_y && i < mid_x) quadrants[0].push(hsv); // top-left
+                    else if (j < mid_y && i >= mid_x) quadrants[1].push(hsv); // top-right
+                    else if (j >= mid_y && i < mid_x) quadrants[2].push(hsv); // bottom-left
+                    else quadrants[3].push(hsv); // bottom-right
+                }
+            }
+
+            const stdDevs = quadrants.map(q => {
+                if (q.length === 0) return Infinity;
+                const vValues = q.map(p => p[2]);
+                const mean = vValues.reduce((a, b) => a + b, 0) / vValues.length;
+                const variance = vValues.reduce((sum, val) => sum + (val - mean) ** 2, 0) / vValues.length;
+                return Math.sqrt(variance);
+            });
+
+            const bestIndex = stdDevs.indexOf(Math.min(...stdDevs));
+            const bestQuadrant = quadrants[bestIndex];
+
+            // Use circular mean for hue
+            let sumSin = 0, sumCos = 0;
+            let avgSat = 0, avgVal = 0;
+
+            bestQuadrant.forEach(([h, s, v]) => {
+                const angle = h * 2 * Math.PI / 255;
+                sumSin += Math.sin(angle);
+                sumCos += Math.cos(angle);
+                avgSat += s;
+                avgVal += v;
+            });
+
+            let avgHue = Math.atan2(sumSin, sumCos);
+            if (avgHue < 0) avgHue += 2 * Math.PI;
+            avgHue = avgHue * 255 / (2 * Math.PI);
+            avgSat /= bestQuadrant.length;
+            avgVal /= bestQuadrant.length;
+
+            const [r, g, b] = hsvToRgb(avgHue / 255, avgSat / 255, avgVal / 255);
+
+            const idx = (y * width + x) * 4;
             result[idx] = r;
             result[idx + 1] = g;
             result[idx + 2] = b;
             result[idx + 3] = 255;
-          }
         }
-      }
-    }
-};
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
 
 export { KuwaharaFilter };
 
@@ -115,12 +118,12 @@ function getImageHSVArray(ctx, width, height) {
     const hsvArray = [];
   
     for (let i = 0; i < data.length; i += 4) {
-      const r = data[i] / 255;
-      const g = data[i + 1] / 255;
-      const b = data[i + 2] / 255;
-  
-      const [h, s, v] = rgbToHsv(r, g, b).map(val => val * 255);
-      hsvArray.push([h, s, v]);
+        const r = data[i] / 255;
+        const g = data[i + 1] / 255;
+        const b = data[i + 2] / 255;
+    
+        const [h, s, v] = rgbToHsv(r, g, b).map(val => val * 255);
+        hsvArray.push([h, s, v]);
     }
   
     return { hsvArray, width, height };
@@ -135,31 +138,31 @@ function GaussianBlur(ctx, width, height, radius = 2) {
   
     // Horizontal pass
     for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        for (let c = 0; c < 3; c++) {
-          let val = 0;
-          for (let k = -2; k <= 2; k++) {
-            const xi = Math.min(width - 1, Math.max(0, x + k));
-            val += weights[k + 2] * temp[(y * width + xi) * 4 + c];
-          }
-          data[(y * width + x) * 4 + c] = val / kernelSum;
+        for (let x = 0; x < width; x++) {
+            for (let c = 0; c < 3; c++) {
+                let val = 0;
+                for (let k = -2; k <= 2; k++) {
+                    const xi = Math.min(width - 1, Math.max(0, x + k));
+                    val += weights[k + 2] * temp[(y * width + xi) * 4 + c];
+                }
+                data[(y * width + x) * 4 + c] = val / kernelSum;
+            }
         }
-      }
     }
   
     // Vertical pass
     temp.set(data);
     for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        for (let c = 0; c < 3; c++) {
-          let val = 0;
-          for (let k = -2; k <= 2; k++) {
-            const yi = Math.min(height - 1, Math.max(0, y + k));
-            val += weights[k + 2] * temp[(yi * width + x) * 4 + c];
-          }
-          data[(y * width + x) * 4 + c] = val / kernelSum;
+        for (let x = 0; x < width; x++) {
+            for (let c = 0; c < 3; c++) {
+                let val = 0;
+                for (let k = -2; k <= 2; k++) {
+                    const yi = Math.min(height - 1, Math.max(0, y + k));
+                    val += weights[k + 2] * temp[(yi * width + x) * 4 + c];
+                }
+                data[(y * width + x) * 4 + c] = val / kernelSum;
+            }
         }
-      }
     }
   
     ctx.putImageData(imageData, 0, 0);
