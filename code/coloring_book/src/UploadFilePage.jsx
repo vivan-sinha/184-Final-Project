@@ -2,6 +2,8 @@ import React, { useRef, useState } from 'react';
 import { extractRegions } from './ExtractRegions';
 import { ExampleTransformation } from './ExampleTranformation';
 import { KMeansTransformation } from './KMeansTransformation';
+import { KuwaharaFilter } from './KuwaharaFilter';
+import { GaussianBlur } from './KuwaharaFilter';
 
 export default function UploadFilePage({ onComplete }) {
   const [colors, setColors] = useState([]);
@@ -25,6 +27,8 @@ export default function UploadFilePage({ onComplete }) {
       
       // Whatever other image processing kuwahara, kmeans, etc.
       // ExampleTransformation(ctx, img); // FLIP COLORS
+      KuwaharaFilter(ctx, img.width, img.height);
+      GaussianBlur(ctx, img.width, img.height, 2);
       KMeansTransformation(ctx, img, numColors);
 
       extractRegions(
