@@ -144,6 +144,11 @@ const extractRegions = (
     setColors(colors);
     setRegionMap(mergedRegions);
 
+    // return {colors: colors, mergedRegions: mergedRegions, originalFilename: originalFilename, dimensions: {
+    //   width: img.width,
+    //   height: img.height,
+    // }}
+
     if (onComplete) {
       onComplete(colors, mergedRegions, originalFilename, {
         width: img.width,
