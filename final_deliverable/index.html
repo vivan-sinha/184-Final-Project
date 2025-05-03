@@ -68,7 +68,7 @@
 
 		<h3>2 Technical Approach</h3>
         <p>
-            The processing of images in our interface can be separated into five main sections: Kuwahara filtering, Gaussian blurring, K-means clustering, Region Clustering / Color Segmentation, and Texture Painting. Kuwahara filtering and Gaussian blurring smooth out input images to remove fine detail and create a simpler framework. K-means clustering is used to determine the color palette of the paint-by-numbers by segmenting the image into k clusters, corresponding to k colors. Region clustering creates separate contiguous regions of the same color. And textured painting creates unique and visually interesting patterns.
+            The processing of images in our interface can be separated into five main sections: Kuwahara filtering, Gaussian blurring, K-means clustering, region clustering / color segmentation, and texture painting. Kuwahara filtering and Gaussian blurring smooth out input images to remove fine detail and create a simpler framework. K-means clustering is used to determine the color palette of the paint-by-numbers by segmenting the image into k clusters, corresponding to k colors. Region clustering creates separate contiguous regions of the same color. And textured painting creates unique and visually interesting patterns.
         </p>
         <h4>2.1 Kuwahara Filter</h4>
         <p>
@@ -160,7 +160,7 @@
 
         <h4>2.3 K-Means Clustering</h4>
         <p>
-            After the Kuwahara Filter and Gaussian Blur are applied to the image, we use K-Means Clustering. The K-Means algorithm is used to group similar data points into clusters. In our application, the pixel’s RGB values act as the data points, as we aim to segment the image into k clusters or color groups. The algorithm works as follows:
+            After the Kuwahara filter and Gaussian blur are applied to the image, we use K-Means clustering. The K-Means algorithm is used to group similar data points into clusters. In our application, the pixel’s RGB values act as the data points, as we aim to segment the image into k clusters or color groups. The algorithm works as follows:
             <ol style="padding-left:20px">
                 <li>
                     Randomly select k centroids.
