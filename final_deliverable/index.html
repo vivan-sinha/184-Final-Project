@@ -7,21 +7,47 @@
   				padding: 0;
 			}
 
-			body > ul,
-			body > ol {
-  				padding-left: 18%;
-			}
-
 			a, b{
   				background: none; 
   				padding: 0;
   				margin: 0;
 			}
+
+            h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 20%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			body {
+                font-family: 'Inter', sans-serif;
+                margin: 0;
+                padding: 0 20px;  
+            }
+
+            .container {
+                margin: 0 auto;
+                padding: 60px 0;
+                max-width: 1000px; 
+            }
+
 		</style>
 	</head>
 	<body>
-		<h2><center>Paint by Numbers, Coloring Book Sim — Final Report</center></h2>
-		<h5 style = "text-align: center;">By Keira Swei, Vivan Sinha, Robert Ni, and Kyle Cheng (Team 20)</h5>
+    <container>
+		<h1><center>Paint by Numbers, Coloring Book Sim — Final Report</center></h1>
+		<h4 style = "text-align: center;">By Keira Swei, Vivan Sinha, Robert Ni, and Kyle Cheng (Team 20)</h4>
 
         <h4><center>Links:&ensp;
             <a href="https://vivan.bio/#/coloring-book">Paint-by-Numbers Website</a> &ensp;
@@ -31,7 +57,7 @@
             <a href="https://github.com/vivan-sinha/184-Final-Project">Github</a> &ensp;
 		</center></h4>
         <figure><center>
-			<img src="../images/image_gif.gif" alt="cat" style="width:30%"/>
+			<img src="../images/image_gif.gif" alt="cat" style="width:70%"/>
 		</center></figure>
 
 
@@ -42,7 +68,7 @@
 
 		<h3>2 Technical Approach</h3>
         <p>
-            The processing of images in our interface can be separated into five main sections: Kuwahara filtering, Gaussian blurring, K-means clustering, region clustering/color segmentation, and texture painting. Kuwahara filtering and Gaussian blurring smooth out input images to remove fine detail and create a simpler framework. K-means clustering is used to determine the color palette of the paint-by-numbers by segmenting the image into k clusters, corresponding to k colors. Textured painting creates unique and visually interesting patterns.
+            The processing of images in our interface can be separated into five main sections: Kuwahara filtering, Gaussian blurring, K-means clustering, Region Clustering / Color Segmentation, and Texture Painting. Kuwahara filtering and Gaussian blurring smooth out input images to remove fine detail and create a simpler framework. K-means clustering is used to determine the color palette of the paint-by-numbers by segmenting the image into k clusters, corresponding to k colors. Region clustering creates separate contiguous regions of the same color. And textured painting creates unique and visually interesting patterns.
         </p>
         <h4>2.1 Kuwahara Filter</h4>
         <p>
@@ -73,16 +99,32 @@
         </p>
         <p>
             A common issue with Kuwahara filtering is the presence of block artifacts, which is further emphasized because we skip every other pixel. The Kuwahara-filtered example below shows signs of aliasing.
+        </p>   
             <figure><center>
-                <img src="../images/aliasing.png" alt="Kuwahara" style="width:30%"/>
+                <img src="../images/aliasing.png" alt="Kuwahara" style="width:60%; max-width: 300px;"/>
             </center></figure>
-        </p>
         <p>
             To smooth out these artifacts, we decided to perform a Gaussian blur (next section).
         </p>
         <p>
             By implementing this Kuwahara filter, we learned to use filters to generate unique effects in images. It’s interesting to see how math can be used in creative ways to produce results that don’t seem intuitive at first.
         </p>
+
+        <div style="display: flex; flex-direction: column; align-items: center; max-width: 800; margin: 0 auto;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; vertical-align: top;">
+				  <img src="../images/renOriginal.png" width="350px"/>
+				  <figcaption>Original Image.</figcaption>
+				</td>
+				<td style="text-align: center; vertical-align: top;">
+				  <img src="../images/renKuwahara.png" width="350px"/>
+				  <figcaption>Kuwahara Filter.</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
         <h4>2.2 Gaussian Blur</h4>
         <p>
             In deciding to use a Gaussian blur, we first compared results from using Gaussian blurring before and after Kuwahara filtering. The results showed that using a Gaussian filter before Kuwahara filtering did not work because the results were still blocky as a result of the inherent nature of a Kuwahara filter: blurring would have to occur after the Kuwahara filter in order to actually smooth out the blocks from the Kuwahara filtering. 
@@ -101,7 +143,22 @@
         <p>
             Through the process of implementing the Gaussian filter, we learned practical ways to implement anti-aliasing and how to solve real problems with image rendering.
         </p>
-        <h4>2.3 K Means Clustering</h4>
+        <div style="display: flex; flex-direction: column; align-items: center; max-width: 800; margin: 0 auto;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; vertical-align: top;">
+				  <img src="../images/renKuwahara.png" width="350px"/>
+				  <figcaption>Kuwahara Filter.</figcaption>
+				</td>
+                <td style="text-align: center; vertical-align: top;">
+                    <img src="../images/renBlur.png" width="350px"/>
+                    <figcaption>Gaussian Blur on Kuwahara Filter.</figcaption>
+                </td>
+			  </tr>
+			</table>
+		</div>
+
+        <h4>2.3 K-Means Clustering</h4>
         <p>
             After the Kuwahara Filter and Gaussian Blur are applied to the image, we use K-Means Clustering. The K-Means algorithm is used to group similar data points into clusters. In our application, the pixel’s RGB values act as the data points, as we aim to segment the image into k clusters or color groups. The algorithm works as follows:
             <ol style="padding-left:20px">
@@ -127,25 +184,25 @@
                 </li>
             </ol>
         </p>
-        <div style="display: flex; flex-direction: column; align-items: center;">
+        <div style="display: flex; flex-direction: column; align-items: center; max-width: 500px; margin: 0 auto;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
-				<td style="text-align: center;">
-				  <img src="../images/kmeans/original.png" width="150px"/>
+				<td style="text-align: center; vertical-align: top;">
+				  <img src="../images/kmeans/original.png" width="200px"/>
 				  <figcaption>Original</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="../images/kmeans/k2.png" width="150px"/>
+				  <img src="../images/kmeans/k2.png" width="200px"/>
 				  <figcaption>k=2</figcaption>
 				</td>
 			  </tr>
               <tr>
-				<td style="text-align: center;">
-				  <img src="../images/kmeans/k3.png" width="150px"/>
+				<td style="text-align: center; vertical-align: top;">
+				  <img src="../images/kmeans/k3.png" width="200px"/>
 				  <figcaption>k=3</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="../images/kmeans/k20.png" width="150px"/>
+				  <img src="../images/kmeans/k20.png" width="200px"/>
 				  <figcaption>k=20</figcaption>
 				</td>
 			  </tr>
@@ -158,6 +215,22 @@
             Furthermore, upon switching to randomly initializing k centroids, the final results of the algorithm varied heavily if 
             max_iterations was too low, as the algorithm terminated before converging. 
         </p>
+
+        <div style="display: flex; flex-direction: column; align-items: center; max-width: 800; margin: 0 auto;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center; vertical-align: top;">
+				  <img src="../images/renBlur.png" width="350px"/>
+				  <figcaption>Gaussian Blur & Kuwahara Filter.</figcaption>
+				</td>
+                <td style="text-align: center; vertical-align: top;">
+                    <img src="../images/renKuwahara.png" width="350px"/>
+                    <figcaption>K-Means on Gaussian Blur & Kuwahara Filter.</figcaption>
+                </td>
+			  </tr>
+			</table>
+		</div>
+        
 
         <h4>2.4 Region Clustering</h4>
         <p>
@@ -239,6 +312,9 @@
                 </li>
             </ul>
         </p>
+        <figure><center>
+            <img src="../images/renaldoUI.png" alt="UI example" style="width:60%; max-width: 250px;"/>
+        </center></figure>
 
         <h4>2.6 Textured Painting Style</h4>
         <p>
@@ -248,26 +324,35 @@
             We ultimately pivoted to a different technique, simulating brush bristles by painting many little dots. At each timestep, the program knows the mouse's previous and current position. We randomly generate many little dots between these two positions, using linear interpolation to fill in the gaps. The number of dots is determined by dividing the distance moved by the brush width, such that the brush stroke is smooth while not being laggy. This makes painting more unique, as the user can repeatedly paint over the same area to make it darker and filled in, like layering on real paint. The result of this method is a brush style that is much more textured and realistic, similar to spray paint.
         </p>
         <figure><center>
-            <img src="../images/spray.png" alt="Spray" style="width:30%"/>
+            <img src="../images/spray.png" alt="Spray" style="width:60%; max-width: 300px;"/>
         </center></figure>
 
 		<h3>3 Results</h3>
         <p>
-            We have implemented a pipeline to go from a user-inputted image to a final paint-by-numbers interface using the techniques described above. This is shown in the below graphic.
+            We have implemented a pipeline to go from a user-inputted image to a final paint-by-numbers interface using the techniques described above. The image processing flow is shown in the below graphic.
             <figure><center>
-                <img src="../images/pipeline.png" alt="Pipeline" style="width:40%"/>
+                <img src="../images/pipelineStraight.png" alt="Pipeline" style="width:100%; margin: 10px; padding: 0px;"/>
             </center></figure>
         </p>
         <p>
             This has been streamlined through one system, and each intermediate step is shown below in this animation:
             <figure><center>
-                <img src="../images/steps.gif" alt="steps" style="width:40%"/>
+                <img src="../images/steps.gif" alt="steps" style="width:60%; max-width: 300px;"/>
             </center></figure>
         </p>
         <p>
+            Our interface is intuitive, aesthetic, and a lot of fun to use. The many UI features and textured painting styles help the user to create beautiful paintings.
+        </p>
+
+        <figure><center>
+            <img src="../images/image_gif.gif" alt="coloring" style="width:60%; max-width: 300px;"/>
+        </center></figure>
+
+        <br>
+        <p>
             As a benchmark, we can compare our results to other paint-by-number generators found online. Shown below is an example of an online paint-by-numbers generator (where the user has manually selected colors to cluster by). Adjustments could be made to perhaps simplify and smoothen our results moving forward, but our interface seems to perform at a comparable level and provides a working interactive experience for users.
             <figure><center>
-                <img src="../images/benchmark.png" alt="PBNify" style="width:40%"/>
+                <img src="../images/benchmark.png" alt="PBNify" style="width:75%; max-width: 600px;"/>
             </center></figure>
         </p>
 
@@ -279,7 +364,10 @@
         <a href="https://pbnify.com/ ">Online Paint By Numbers Generator</a> <br>
 
         <h3>5 Contributions</h3>
-		Keira: <br>
+		Keira: Implemented K-Means Clustering. Contributed to milestone/final writeup and slides. <br>
         Kyle: Implemented textured brush stroke style. Contributed to milestone/final writeup and slides.<br>
         Robert: Implemented Kuwahara filter and Gaussian blur. Contributed to milestone/final writeup and slides.<br>
         Vivan: <br>
+    </container>
+    </body>
+</html>
