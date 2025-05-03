@@ -1,0 +1,285 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="style.css">
+		<style>
+			li {
+  				margin: 0;
+  				padding: 0;
+			}
+
+			body > ul,
+			body > ol {
+  				padding-left: 18%;
+			}
+
+			a, b{
+  				background: none; 
+  				padding: 0;
+  				margin: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<h2><center>Paint by Numbers, Coloring Book Sim — Final Report</center></h2>
+		<h5 style = "text-align: center;">By Keira Swei, Vivan Sinha, Robert Ni, and Kyle Cheng (Team 20)</h5>
+
+        <h4><center>Links:&ensp;
+            <a href="https://vivan.bio/#/coloring-book">Paint-by-Numbers Website</a> &ensp;
+			<a href="https://vivan.bio/184-Final-Project/index.html">Deliverables Webpage</a> &ensp;
+			<a href="https://www.youtube.com/watch?v=C9V4qnGFeN0">Video</a> &ensp;
+			<a href="https://docs.google.com/presentation/d/1bAHt2NOgSPNQt2QOmSQW8GgZr-FddmBalW0Ylyy1lyI/edit?usp=sharing">Slideshow</a> &ensp;
+            <a href="https://github.com/vivan-sinha/184-Final-Project">Github</a> &ensp;
+		</center></h4>
+        <figure><center>
+			<img src="../images/image_gif.gif" alt="cat" style="width:30%"/>
+		</center></figure>
+
+
+		<h3>1 Abstract</h3>
+		<p>
+			Paint-by-numbers and coloring books have played a large role in upbringing of many children, including ourselves. Remembering hours spent in coloring in images, we aim to create a paint-by-numbers generator. Users can pass in any image they want and our code will generate a paint-by-numbers that users can color in. This project requires a number of processing steps: we first smooth out the image, then cluster the image by color, and transfer this information into a user interface.
+		</p>
+
+		<h3>2 Technical Approach</h3>
+        <p>
+            The processing of images in our interface can be separated into five main sections: Kuwahara filtering, Gaussian blurring, K-means clustering, region clustering/color segmentation, and texture painting. Kuwahara filtering and Gaussian blurring smooth out input images to remove fine detail and create a simpler framework. K-means clustering is used to determine the color palette of the paint-by-numbers by segmenting the image into k clusters, corresponding to k colors. Textured painting creates unique and visually interesting patterns.
+        </p>
+        <h4>2.1 Kuwahara Filter</h4>
+        <p>
+            We first apply a Kuwahara filter. This filter is commonly used to modify an image into one that looks painted rather than realistic. We can utilize it to smooth images, reduce noise, and remove fine details: having too many details detracts from the simplicity of paint-by-numbers.
+        </p>
+        <p>
+            The following steps are repeated for all pixels (converted to HSV color space):
+            <ol style="padding-left:20px">
+                <li>
+                    Start with a square window of a given size centered at the pixel.
+                </li>
+                <li>
+                    Divide the window into 4 equal quadrants.
+                </li>
+                <li>
+                    Find the standard deviation of the V channel in each quadrant.
+                </li>
+                <li>
+                    Set the central pixel’s HSV to be the average of the quadrant with the lowest standard deviation.
+                </li>
+            </ol>
+        </p>
+        <p>
+            We ran into two main issues during this process: 1) speed and 2) aliasing.
+        </p>
+        <p>
+            Our original Kuwahara filter ran too slowly, especially for an interactive webpage. Thus, instead of iterating through every pixel, we performed Kuwahara filtering on every other pixel and then upsampled this result to get the final output. We get a large improvement in speed for a small tradeoff in accuracy. For the stylized and simplistic result we want, losing some accuracy is fine.
+        </p>
+        <p>
+            A common issue with Kuwahara filtering is the presence of block artifacts, which is further emphasized because we skip every other pixel. The Kuwahara-filtered example below shows signs of aliasing.
+            <figure><center>
+                <img src="../images/aliasing.png" alt="Kuwahara" style="width:30%"/>
+            </center></figure>
+        </p>
+        <p>
+            To smooth out these artifacts, we decided to perform a Gaussian blur (next section).
+        </p>
+        <p>
+            By implementing this Kuwahara filter, we learned to use filters to generate unique effects in images. It’s interesting to see how math can be used in creative ways to produce results that don’t seem intuitive at first.
+        </p>
+        <h4>2.2 Gaussian Blur</h4>
+        <p>
+            In deciding to use a Gaussian blur, we first compared results from using Gaussian blurring before and after Kuwahara filtering. The results showed that using a Gaussian filter before Kuwahara filtering did not work because the results were still blocky as a result of the inherent nature of a Kuwahara filter: blurring would have to occur after the Kuwahara filter in order to actually smooth out the blocks from the Kuwahara filtering. 
+        </p>
+        <p>
+            Gaussian blur works by convolving an image with a Gaussian function. In this project, we implemented Gaussian blur with two passes:
+            <ol style="padding-left:20px">
+                <li>
+                    Use a 1D finite impulse response (FIR) kernel and convolve it with the image in the horizontal direction.
+                </li>
+                <li>
+                    Use the same FIR and convolve it with the image in the vertical direction.
+                </li>
+            </ol>
+        </p>
+        <p>
+            Through the process of implementing the Gaussian filter, we learned practical ways to implement anti-aliasing and how to solve real problems with image rendering.
+        </p>
+        <h4>2.3 K Means Clustering</h4>
+        <p>
+            After the Kuwahara Filter and Gaussian Blur are applied to the image, we use K-Means Clustering. The K-Means algorithm is used to group similar data points into clusters. In our application, the pixel’s RGB values act as the data points, as we aim to segment the image into k clusters or color groups. The algorithm works as follows:
+            <ol style="padding-left:20px">
+                <li>
+                    Randomly select k centroids.
+                </li>
+                <li>
+                    Until convergence (updated centroids = old centroids) or the max number of iterations is reached:
+                    <ol style="padding-left:40px">
+                        <li type="a">
+                            Assign each data point to the nearest cluster (based on which cluster’s centroid is closest to the data point).
+                        </li>
+                        <li type="a">
+                            Update centroids to be the mean of the points in each cluster.
+                        </li>
+                        <li type="a">
+                            If there happens to be an empty cluster (no data points are closest to the centroid, so the cluster is empty), randomly select a new centroid.
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    All pixel colors in the final image are replaced by the color of the centroid of their assigned cluster, resulting in a transformed image with exactly k colors.
+                </li>
+            </ol>
+        </p>
+        <div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="../images/kmeans/original.png" width="150px"/>
+				  <figcaption>Original</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="../images/kmeans/k2.png" width="150px"/>
+				  <figcaption>k=2</figcaption>
+				</td>
+			  </tr>
+              <tr>
+				<td style="text-align: center;">
+				  <img src="../images/kmeans/k3.png" width="150px"/>
+				  <figcaption>k=3</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="../images/kmeans/k20.png" width="150px"/>
+				  <figcaption>k=20</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+        <p>
+            We referenced K-Means pseudocode in implementing this algorithm, adapting the algorithm to use the RGB values as data points. 
+            Additionally, centroid initialization and max_iterations had a significant impact on the implementation of this algorithm. 
+            Initially, the centroids were initialized as the first k-pixel values, which did not accurately reflect the colors across the whole image, impacting run time. 
+            Furthermore, upon switching to randomly initializing k centroids, the final results of the algorithm varied heavily if 
+            max_iterations was too low, as the algorithm terminated before converging. 
+        </p>
+
+        <h4>2.4 Region Clustering</h4>
+        <p>
+            Following the K-means, we cluster contiguous regions of the same color into separate “paintable” regions. This is an essential part of our system because we want the user to interact with coherent spatial regions rather than individual pixels.
+        </p>
+        <p>
+            To accomplish this, we perform a flood-fill-based region extraction:
+            <ol style="padding-left:20px">
+                <li>
+                    We iterate over every pixel in the image and initiate a flood-fill if the pixel has not yet been visited.
+                </li>
+                <li>
+                    The flood-fill expands to adjacent pixels of the same RGB color, grouping them into a single region.
+                </li>
+                <li>
+                    Each region is assigned a unique ID and linked to a color index determined during the K-Means clustering phase.
+                </li>
+            </ol>
+        </p>
+        <p>
+            One challenge we faced was the presence of many tiny regions. These could be due to noise, compression, or just small details in the image. These small regions were visually distracting and made user interaction cumbersome. To address this, we introduced a merging step:
+            <ul style="padding-left:20px">
+                <li>
+                    Regions below a size threshold (default 50 pixels) are merged into the most adjacent neighboring region with a different ID.
+                </li>
+                <li>
+                    Adjacency is determined by checking for neighboring pixels in the four cardinal directions and identifying which neighboring region has the highest number of adjacent pixels.
+                </li>
+            </ul>
+        </p>
+        <p>
+            Finally, for each region, we also precompute a set of border pixels, defined as those with at least one neighbor outside the region. These are used for visual outlines and region selection in the UI. 
+        </p>
+
+        <h4>2.5 UI</h4>
+        <p>
+            Lastly, we provide an interactive user interface that allows users to color in the segmented image using a paint-by-numbers simulation. Built with React and HTML5 Canvas, the UI is structured to provide intuitive interaction while strictly enforcing the region boundaries determined during region clustering. The interface uses three stacked canvas elements:
+                <ol style="padding-left:20px">
+                    <li>
+                        Base Canvas: Stores the user’s actual painting strokes.
+                    </li>
+                    <li>
+                        Highlight Canvas: Renders outlines for regions and overlays unselected regions in gray to guide the user.
+                    </li>
+                    <li>
+                        Cursor Canvas: Displays a real-time preview of the brush position and shape, including color and size.
+                    </li>
+                </ol>
+        </p>
+        <p>
+            Upon mouse click, if no region is selected, the system checks whether the click falls within any region by looking up the pixel’s coordinates in the precomputed region maps. If the user clicks inside a valid region, that region becomes "selected," and only that region can be painted on.
+        </p>
+        <p>
+            To implement this, all drawing operations are masked using a pixel-level filter. Before painting, a hidden canvas is used to draw the stroke as if there were no constraints. Then, using the selected region's pixel map, only the pixels within the region are transferred back to the main canvas. This process is repeated for every stroke, preventing any stroke from bleeding into adjacent regions.
+        </p>
+        <p>
+            In normal drawing mode, we implemented a smooth round brush. The thickness of the brush is user-adjustable via a slider or numeric input. When the user clicks, a circle with the radius of the brush stroke is drawn. However, mouse events were not quick enough to drag out a continuous line. To fix this, when the user holds down the mouse button and moves the cursor, the system interpolates between the current and previous cursor positions to form a smooth stroke, which is rendered as a line (via ctx.lineTo) with round line caps. 
+        </p>
+        <p>
+            We ran into some lag spikes implementing this technique, so we optimized by only redrawing within a bounding box surrounding the stroke, which minimizes canvas processing overhead.
+        </p>
+        <p>
+            Additional usability features include:
+            <ul style="padding-left:20px">
+                <li>
+                    Color Palette: Displayed as a grid of circular swatches, each indexed and clickable to select a brush color.
+                </li>
+                <li>
+                    Outlines Toggle: Pressing the "O" key toggles the visibility of outlines to help guide coloring without clutter.
+                </li>
+                <li>
+                    Brush Size Control: A combination of slider and input box allows precise control of brush width.
+                </li>
+                <li>
+                    Hotkeys: Number keys (0–9) allow quick color switching, and Esc clears the current region and color selection.
+                </li>
+                <li>
+                    Download Functionality: The painted canvas can be exported to a PNG file using the browser’s native file system API.
+                </li>
+            </ul>
+        </p>
+
+        <h4>2.6 Textured Painting Style</h4>
+        <p>
+            Initially, the painting style used a solid flood fill that colors every pixel. To add more creativity, we explored how to add texture to mimic different brush styles. Our first attempt involved applying a set pattern. When the user selects a region, the program would fill in pixels using a pattern mask. However, the visuals generated using this method felt quite predictable and dull.
+        </p>
+        <p>
+            We ultimately pivoted to a different technique, simulating brush bristles by painting many little dots. At each timestep, the program knows the mouse's previous and current position. We randomly generate many little dots between these two positions, using linear interpolation to fill in the gaps. The number of dots is determined by dividing the distance moved by the brush width, such that the brush stroke is smooth while not being laggy. This makes painting more unique, as the user can repeatedly paint over the same area to make it darker and filled in, like layering on real paint. The result of this method is a brush style that is much more textured and realistic, similar to spray paint.
+        </p>
+        <figure><center>
+            <img src="../images/spray.png" alt="Spray" style="width:30%"/>
+        </center></figure>
+
+		<h3>3 Results</h3>
+        <p>
+            We have implemented a pipeline to go from a user-inputted image to a final paint-by-numbers interface using the techniques described above. This is shown in the below graphic.
+            <figure><center>
+                <img src="../images/pipeline.png" alt="Pipeline" style="width:40%"/>
+            </center></figure>
+        </p>
+        <p>
+            This has been streamlined through one system, and each intermediate step is shown below in this animation:
+            <figure><center>
+                <img src="../images/steps.gif" alt="steps" style="width:40%"/>
+            </center></figure>
+        </p>
+        <p>
+            As a benchmark, we can compare our results to other paint-by-number generators found online. Shown below is an example of an online paint-by-numbers generator (where the user has manually selected colors to cluster by). Adjustments could be made to perhaps simplify and smoothen our results moving forward, but our interface seems to perform at a comparable level and provides a working interactive experience for users.
+            <figure><center>
+                <img src="../images/benchmark.png" alt="PBNify" style="width:40%"/>
+            </center></figure>
+        </p>
+
+        <h3>4 References</h3>
+        <a href="https://www.ipol.im/pub/art/2013/87/?utm_source=doi">Gaussian Blur 1</a> <br>
+        <a href="https://sumitkrsharma-ai.medium.com/gaussian-low-pass-filter-in-image-preprocessing-0f39507bf905 ">Gaussian Blur 2</a> <br>
+        <a href="https://www.researchgate.net/publication/221226072_Edge_and_corner_preserving_smoothing_for_artistic_imaging">Kuwahara Filter</a> <br>
+        <a href="https://stanford.edu/~cpiech/cs221/handouts/kmeans.html">K-Means Clustering</a> <br>
+        <a href="https://pbnify.com/ ">Online Paint By Numbers Generator</a> <br>
+
+        <h3>5 Contributions</h3>
+		Keira: <br>
+        Kyle: Implemented textured brush stroke style. Contributed to milestone/final writeup and slides.<br>
+        Robert: Implemented Kuwahara filter and Gaussian blur. Contributed to milestone/final writeup and slides.<br>
+        Vivan: <br>
